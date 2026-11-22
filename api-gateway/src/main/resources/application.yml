@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 spring:
   application:
@@ -8,24 +8,41 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8081/realms/bda-realm
+          # issuer: lo que dice el token (pedido desde el host en localhost:9090)
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/patito}
+          # jwk-set-uri: de dónde bajar las claves públicas (en Docker: http://keycloak:8080/...)
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/patito/protocol/openid-connect/certs}
 
 app:
   routes:
-    clientes-url: http://localhost:8082
-    tecnicos-url: http://localhost:8083
-    solicitudes-url: http://localhost:8084
+    clientes-url: ${CLIENTES_URL:http://localhost:8083}
+    tecnicos-url: ${TECNICOS_URL:http://localhost:8082}
+    solicitudes-url: ${SOLICITUDES_URL:http://localhost:8081}
+
+# Swagger UI unificado en http://localhost:8080/swagger-ui.html
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true
+    urls:
+      - name: MS-Clientes
+        url: /docs/clientes/v3/api-docs
+      - name: MS-Técnicos
+        url: /docs/tecnicos/v3/api-docs
+      - name: MS-Solicitudes
+        url: /docs/solicitudes/v3/api-docs
+    urls-primary-name: MS-Solicitudes
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,metrics,loggers,gateway
 
 logging:
   level:
     root: INFO
     utnfc.isi.back.tpi: DEBUG
     org.springframework.security: INFO
-  file:
-    name: logs/api-gateway.log

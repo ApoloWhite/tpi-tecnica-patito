@@ -1,0 +1,2661 @@
+{
+  "info": {
+    "_postman_id": "ba5ecac2-afc4-50c2-8167-a990380ad5d9",
+    "name": "Técnica Patito – Backend",
+    "description": "Colección del TPI Técnica Patito S.R.L. (GRUPO-107, 3K1).\n\nOrden: 00 → 01 → 02 → 03 → 04 → 05. Los tokens duran 30 minutos: si ves 401 en todo, volvé a correr 00.\nTodas las llamadas pasan por el API Gateway ({{gateway_url}}).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Fechas dinámicas: el próximo día hábil a las 10:00 (horario normal) y a las 21:00 (fuera de horario)",
+          "function proximoHabil(hora) {",
+          "    const d = new Date();",
+          "    d.setDate(d.getDate() + 1);",
+          "    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);",
+          "    const p = n => String(n).padStart(2, \"0\");",
+          "    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}T${p(hora)}:00:00`;",
+          "}",
+          "pm.collectionVariables.set(\"fechaHabil\", proximoHabil(10));",
+          "pm.collectionVariables.set(\"fechaFueraHorario\", proximoHabil(21));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "00 – Seguridad",
+      "description": "Obtiene los 3 tokens JWT de Keycloak (grant_type=password). Ejecutar SIEMPRE primero: los tokens duran 30 minutos.",
+      "item": [
+        {
+          "name": "Token ADMINISTRADOR (admin1)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{keycloak_url}}",
+            "description": "Pide un JWT a Keycloak con el usuario admin1 (rol ADMINISTRADOR) y lo guarda en la variable token_admin.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "username",
+                  "value": "admin1"
+                },
+                {
+                  "key": "password",
+                  "value": "admin123"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const token = pm.response.json().access_token;",
+                  "pm.test(\"Devuelve access_token\", () => pm.expect(token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"token_admin\", token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token CLIENTE (cliente1)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{keycloak_url}}",
+            "description": "Pide un JWT a Keycloak con el usuario cliente1 (rol CLIENTE) y lo guarda en la variable token_cliente.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "username",
+                  "value": "cliente1"
+                },
+                {
+                  "key": "password",
+                  "value": "cliente123"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const token = pm.response.json().access_token;",
+                  "pm.test(\"Devuelve access_token\", () => pm.expect(token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"token_cliente\", token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Token TECNICO (tecnico1)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{keycloak_url}}",
+            "description": "Pide un JWT a Keycloak con el usuario tecnico1 (rol TECNICO) y lo guarda en la variable token_tecnico.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                },
+                {
+                  "key": "client_id",
+                  "value": "{{client_id}}"
+                },
+                {
+                  "key": "username",
+                  "value": "tecnico1"
+                },
+                {
+                  "key": "password",
+                  "value": "tecnico123"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "",
+                  "const token = pm.response.json().access_token;",
+                  "pm.test(\"Devuelve access_token\", () => pm.expect(token).to.be.a(\"string\"));",
+                  "pm.collectionVariables.set(\"token_tecnico\", token);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 – Clientes",
+      "description": "Llamadas al MS-Clientes a través del gateway (F2).",
+      "item": [
+        {
+          "name": "Listar clientes (ADMINISTRADOR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/clientes?page=0&size=10",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Trae la página con los clientes de prueba\", () => { const b = pm.response.json(); pm.expect(b.content.length).to.be.above(0); pm.expect(b.page.totalElements).to.be.at.least(3); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar cliente 1 (CLIENTE)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/clientes/{{clienteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Carlos García en (-31.420, -64.188)\", () => { const b = pm.response.json(); pm.expect(b.nombre).to.eql(\"Carlos\"); pm.expect(b.latitud).to.eql(-31.42); pm.expect(b.longitud).to.eql(-64.188); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar cliente (CLIENTE)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/clientes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Pedro\",\n  \"apellido\": \"Martínez\",\n  \"dni\": \"{{dniCliente}}\",\n  \"calle\": \"Av. Colón 1200\",\n  \"barrio\": \"Alberdi\",\n  \"latitud\": -31.4135,\n  \"longitud\": -64.201\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"dniCliente\", String(_.random(40000000, 49999999)));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Header Location con la URI creada\", () => pm.expect(pm.response.headers.get(\"Location\")).to.include(\"/api/v1/clientes/\"));",
+                  "pm.collectionVariables.set(\"nuevoClienteId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Modificar cliente (CLIENTE)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/clientes/{{nuevoClienteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Pedro\",\n  \"apellido\": \"Martínez\",\n  \"dni\": \"{{dniCliente}}\",\n  \"calle\": \"Bv. San Juan 500\",\n  \"barrio\": \"Centro\",\n  \"latitud\": -31.419,\n  \"longitud\": -64.19\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Calle actualizada\", () => pm.expect(pm.response.json().calle).to.eql(\"Bv. San Juan 500\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar cliente (ADMINISTRADOR)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/clientes/{{nuevoClienteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 204\", () => pm.response.to.have.status(204));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar cliente eliminado → 404",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/clientes/{{nuevoClienteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(404); pm.expect(b.detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 – Técnicos",
+      "description": "Llamadas al MS-Técnicos a través del gateway (F3, F5).",
+      "item": [
+        {
+          "name": "Listar técnicos (CLIENTE puede ver)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/tecnicos?page=0&size=10",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Hay al menos 3 técnicos\", () => pm.expect(pm.response.json().page.totalElements).to.be.at.least(3));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Consultar técnico 1",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/tecnicos/{{tecnicoId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Juan Pérez con Redes e Impresoras\", () => { const b = pm.response.json(); pm.expect(b.nombre).to.eql(\"Juan\"); pm.expect(b.certificaciones.map(c => c.nombre)).to.include.members([\"Redes\", \"Impresoras\"]); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar certificaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/certificaciones",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Redes, Impresoras y Notebooks Apple\", () => pm.expect(pm.response.json().map(c => c.nombre)).to.include.members([\"Redes\", \"Impresoras\", \"Notebooks Apple\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar zonas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/zonas",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Centro y Nueva Córdoba\", () => pm.expect(pm.response.json().map(z => z.nombre)).to.include.members([\"Centro\", \"Nueva Córdoba\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Candidatos Redes cerca del cliente 1 (RN-2, RN-9)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/tecnicos/candidatos?certificacionId=1&latitud=-31.420&longitud=-64.188",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Solo Juan: Lejano tiene Redes pero está a más de 13 km\", () => { const b = pm.response.json(); pm.expect(b.map(c => c.nombre)).to.eql([\"Juan\"]); pm.expect(b[0].distanciaKm).to.be.below(13); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar técnico (ADMINISTRADOR)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/tecnicos",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legajo\": \"{{legajoTecnico}}\",\n  \"nombre\": \"Laura\",\n  \"apellido\": \"Sosa\",\n  \"dni\": \"{{dniTecnico}}\",\n  \"latitud\": -31.41,\n  \"longitud\": -64.18,\n  \"disponible\": true,\n  \"certificacionIds\": [\n    1,\n    3\n  ],\n  \"zonaIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"dniTecnico\", String(_.random(20000000, 29999999)));",
+                  "pm.collectionVariables.set(\"legajoTecnico\", \"T-\" + Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Con sus certificaciones\", () => pm.expect(pm.response.json().certificaciones.length).to.eql(2));",
+                  "pm.collectionVariables.set(\"nuevoTecnicoId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Marcar técnico como no disponible (TECNICO)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/tecnicos/{{nuevoTecnicoId}}/disponibilidad",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"disponible\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Quedó no disponible\", () => pm.expect(pm.response.json().disponible).to.eql(false));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 – Solicitudes",
+      "description": "Llamadas al MS-Solicitudes: listados, simulación de costos (/elegir), patrón snapshot y rechazo de oferta.",
+      "item": [
+        {
+          "name": "Listar solicitudes (ADMINISTRADOR)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes?page=0&size=10",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Elegir: URGENTE fuera de horario → estrategia COMBINADA (RN-11)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes/elegir",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"especialidadId\": 2,\n  \"latitud\": -31.42,\n  \"longitud\": -64.188,\n  \"prioridad\": \"URGENTE\",\n  \"fechaHoraProgramada\": \"{{fechaFueraHorario}}\",\n  \"esFeriado\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Juan y Ana tienen Impresoras\", () => pm.expect(pm.response.json().cantidad).to.eql(2));",
+                  "pm.test(\"Estrategia COMBINADA con recargo\", () => { const r = pm.response.json().recomendado; pm.expect(r.estrategiaCosto).to.eql(\"COMBINADA\"); pm.expect(r.recargo).to.be.above(0); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Elegir: sin candidatos (Notebooks Apple en Carlos Paz)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes/elegir",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"especialidadId\": 3,\n  \"latitud\": -31.4241,\n  \"longitud\": -64.4978,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Lista vacía y alerta al administrador (RN-2)\", () => { const b = pm.response.json(); pm.expect(b.cantidad).to.eql(0); pm.expect(b.mensaje).to.include(\"administrador\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Snapshot: la solicitud conserva el domicilio original",
+          "description": "",
+          "item": [
+            {
+              "name": "1. Crear solicitud para el cliente 2",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": 2,\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": 2,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"snapshotSolicitudId\", pm.response.json().id);",
+                      "pm.collectionVariables.set(\"domicilioOriginal\", pm.response.json().domicilio);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. El cliente 2 se muda",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/clientes/2",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"María\",\n  \"apellido\": \"Rodríguez\",\n  \"dni\": \"31222333\",\n  \"calle\": \"Av. Vélez Sarsfield 2000\",\n  \"barrio\": \"Güemes\",\n  \"latitud\": -31.44,\n  \"longitud\": -64.195\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. La solicitud sigue con el domicilio original",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{snapshotSolicitudId}}",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Domicilio sin cambios (snapshot)\", () => pm.expect(pm.response.json().domicilio).to.eql(pm.collectionVariables.get(\"domicilioOriginal\")));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Restaurar el domicilio del cliente 2",
+              "request": {
+                "method": "PUT",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/clientes/2",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"nombre\": \"María\",\n  \"apellido\": \"Rodríguez\",\n  \"dni\": \"31222333\",\n  \"calle\": \"Obispo Trejo 900\",\n  \"barrio\": \"Nueva Córdoba\",\n  \"latitud\": -31.428,\n  \"longitud\": -64.187\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "5. Cancelar la solicitud de prueba",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{snapshotSolicitudId}}/cancelar?motivo=Prueba de snapshot",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado CANCELADA\", () => pm.expect(pm.response.json().estado).to.eql(\"CANCELADA\"));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "Rechazo de oferta: vuelve a PENDIENTE (RN-3)",
+          "description": "",
+          "item": [
+            {
+              "name": "1. Crear solicitud",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"rechazoSolicitudId\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Ofertar al técnico 1",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{rechazoSolicitudId}}/ofertar/{{tecnicoId}}",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. El técnico rechaza",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{rechazoSolicitudId}}/rechazar/{{tecnicoId}}",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.test(\"Ya no tiene técnico\", () => pm.expect(pm.response.json().tecnicoId).to.be.null);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Cancelar la solicitud de prueba",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{rechazoSolicitudId}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado CANCELADA\", () => pm.expect(pm.response.json().estado).to.eql(\"CANCELADA\"));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 – Flujo principal",
+      "description": "Proceso de negocio completo: crear → elegir → ofertar → aceptar → presupuesto → aprobar → finalizar → historial. Ejecutar en orden.",
+      "item": [
+        {
+          "name": "1. Consultar cliente (coordenadas)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/clientes/{{clienteId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set(\"clienteLat\", pm.response.json().latitud);",
+                  "pm.collectionVariables.set(\"clienteLon\", pm.response.json().longitud);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. EP-01 Crear solicitud → PENDIENTE (RN-1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                  "pm.test(\"Snapshot del cliente\", () => { const b = pm.response.json(); pm.expect(b.clienteNombre).to.eql(\"Carlos García\"); pm.expect(b.latitud).to.eql(-31.42); });",
+                  "pm.collectionVariables.set(\"solicitudId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. EP-02 Elegir candidatos (RN-2, RN-9, RN-11)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes/elegir",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"especialidadId\": {{especialidadId}},\n  \"latitud\": {{clienteLat}},\n  \"longitud\": {{clienteLon}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json().recomendado;",
+                  "pm.test(\"Recomienda a Juan a menos de 13 km\", () => { pm.expect(r.tecnicoNombre).to.eql(\"Juan Pérez\"); pm.expect(r.distanciaKm).to.be.below(13); });",
+                  "pm.test(\"Estrategia ESTANDAR: total = base, sin recargo\", () => { pm.expect(r.estrategiaCosto).to.eql(\"ESTANDAR\"); pm.expect(r.total).to.eql(r.costoBase); });",
+                  "pm.collectionVariables.set(\"tecnicoId\", r.tecnicoId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Ofertar al técnico → OFERTADA (RN-3)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{solicitudId}}/ofertar/{{tecnicoId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));",
+                  "pm.test(\"ofertaExpira ~15 minutos en el futuro\", () => { const min = (new Date(pm.response.json().ofertaExpira) - new Date()) / 60000; pm.expect(min).to.be.within(0, 16); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. EP-03 Técnico acepta → ASIGNADA con costo (RN-8)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{solicitudId}}/aceptar/{{tecnicoId}}",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado ASIGNADA\", () => pm.expect(pm.response.json().estado).to.eql(\"ASIGNADA\"));",
+                  "pm.test(\"Costo calculado\", () => { const b = pm.response.json(); [\"distanciaKm\", \"tiempoEstimadoMin\", \"estrategiaCosto\", \"costoBase\", \"recargo\", \"total\"].forEach(k => pm.expect(b[k], k).to.not.be.null); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Técnico carga diagnóstico y presupuesto (F7)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{solicitudId}}/presupuesto",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diagnostico\": \"Rodillo de arrastre gastado, hay que reemplazarlo\",\n  \"importe\": 1500.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Presupuesto guardado\", () => pm.expect(pm.response.json().presupuesto).to.eql(1500));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. EP-04 Cliente aprueba presupuesto → EN_CURSO (RN-6)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{solicitudId}}/aprobar-presupuesto",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado EN_CURSO\", () => pm.expect(pm.response.json().estado).to.eql(\"EN_CURSO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "8. Técnico finaliza → FINALIZADA (F9)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{solicitudId}}/finalizar",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado FINALIZADA\", () => pm.expect(pm.response.json().estado).to.eql(\"FINALIZADA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "9. EP-05 Historial completo (RN-7)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{solicitudId}}/historial",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const h = pm.response.json();",
+                  "pm.test(\"Recorrido completo en orden\", () => pm.expect(h.map(x => x.estadoNuevo)).to.eql([\"PENDIENTE\", \"OFERTADA\", \"ASIGNADA\", \"ASIGNADA\", \"EN_CURSO\", \"FINALIZADA\"]));",
+                  "pm.test(\"Cada paso tiene fecha, hora y usuario\", () => h.forEach(x => { pm.expect(x.fechaHora).to.be.a(\"string\"); pm.expect(x.usuario).to.be.a(\"string\"); }));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 – Escenarios negativos",
+      "description": "Rechazos de seguridad y de reglas de negocio. EN-07 y EN-09 necesitan una acción manual: están en la carpeta 06.",
+      "item": [
+        {
+          "name": "EN-01 Sin token → 401",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/tecnicos",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(401); pm.expect(b.detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EN-02 Token inválido → 401",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJSUzI1NiJ9.token.corrupto"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/tecnicos",
+            "description": "",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 401\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(401); pm.expect(b.detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EN-03 CLIENTE registra técnico → 403",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/tecnicos",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legajo\": \"T-999\",\n  \"nombre\": \"No\",\n  \"apellido\": \"Autorizado\",\n  \"dni\": \"29999999\",\n  \"latitud\": -31.41,\n  \"longitud\": -64.18,\n  \"certificacionIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(403); pm.expect(b.detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EN-04 Solicitud sin tipos de servicio → 400 (RN-1)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 400\", () => pm.response.to.have.status(400));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(400); pm.expect(b.detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Indica el campo tiposServicio\", () => pm.expect(pm.response.json().errores).to.have.property(\"tiposServicio\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EN-05 Cliente inexistente → 404",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": 999999,\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 404\", () => pm.response.to.have.status(404));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(404); pm.expect(b.detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Detalle menciona \\\"cliente\\\"\", () => pm.expect(pm.response.json().detail).to.include(\"cliente\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "EN-06 – Técnico al límite de solicitudes (RN-5)",
+          "description": "Arma el escenario (1 EN_CURSO + 2 ASIGNADAS para el técnico 1), prueba EN-06 y EN-08, y después limpia para que la colección se pueda volver a correr.",
+          "item": [
+            {
+              "name": "Preparar A: crear",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"en06A\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar A: ofertar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06A}}/ofertar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar A: aceptar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06A}}/aceptar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar A: presupuesto",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06A}}/presupuesto",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"diagnostico\": \"Cambio de fuente\",\n  \"importe\": 2000\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar A: aprobar → EN_CURSO",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06A}}/aprobar-presupuesto",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado EN_CURSO\", () => pm.expect(pm.response.json().estado).to.eql(\"EN_CURSO\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar B: crear",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"en06B\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar B: ofertar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06B}}/ofertar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar B: aceptar → ASIGNADA",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06B}}/aceptar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado ASIGNADA\", () => pm.expect(pm.response.json().estado).to.eql(\"ASIGNADA\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar C: crear",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"en06C\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar C: ofertar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06C}}/ofertar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar C: aceptar → ASIGNADA",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06C}}/aceptar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado ASIGNADA\", () => pm.expect(pm.response.json().estado).to.eql(\"ASIGNADA\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Preparar D: crear (queda PENDIENTE)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"en06D\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "EN-06 Ofertar D al técnico 1 → 422",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06D}}/ofertar/1",
+                "description": "El técnico 1 tiene 1 solicitud EN_CURSO y 2 ASIGNADAS: no puede recibir otra oferta.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                      "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(422); pm.expect(b.detail).to.be.a(\"string\"); });",
+                      "pm.test(\"Detalle menciona \\\"límite\\\"\", () => pm.expect(pm.response.json().detail).to.include(\"límite\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "EN-08 Aprobar presupuesto de D (PENDIENTE) → 422",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06D}}/aprobar-presupuesto",
+                "description": "RN-6: solo se aprueba un presupuesto de una solicitud ASIGNADA.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                      "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(422); pm.expect(b.detail).to.be.a(\"string\"); });",
+                      "pm.test(\"Detalle menciona \\\"PENDIENTE\\\"\", () => pm.expect(pm.response.json().detail).to.include(\"PENDIENTE\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Limpieza: cancelar B",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06B}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Limpieza: cancelar C",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06C}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Limpieza: cancelar D",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06D}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Limpieza: finalizar A",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en06A}}/finalizar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EN-10 Técnico con DNI duplicado → 422",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/tecnicos",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"legajo\": \"{{legajoDuplicado}}\",\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Copia\",\n  \"dni\": \"25111222\",\n  \"latitud\": -31.41,\n  \"longitud\": -64.18,\n  \"certificacionIds\": [\n    1\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set(\"legajoDuplicado\", \"T-\" + Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 422\", () => pm.response.to.have.status(422));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(422); pm.expect(b.detail).to.be.a(\"string\"); });",
+                  "pm.test(\"Detalle menciona \\\"DNI\\\"\", () => pm.expect(pm.response.json().detail).to.include(\"DNI\"));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "06 – Escenarios manuales (EN-07, EN-09)",
+      "description": "Escenarios que requieren una acción fuera de Postman (esperar o detener un contenedor). No se incluyen en la corrida automática.",
+      "item": [
+        {
+          "name": "EN-07 – Oferta vencida (RN-3)",
+          "description": "Para no esperar 15 minutos: en el archivo .env poné OFERTA_VENTANA_MINUTOS=1 y reiniciá con docker compose up -d. Ejecutá 1 y 2, esperá ~90 segundos y ejecutá 3 y 4.",
+          "item": [
+            {
+              "name": "1. Crear solicitud",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.collectionVariables.set(\"en07\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Ofertar al técnico 1",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en07}}/ofertar/1",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. (esperar a que venza) Consultar → PENDIENTE",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en07}}",
+                "description": "Esperá a que pase la ventana (OFERTA_VENTANA_MINUTOS) más hasta 30 s del scheduler y ejecutá este paso.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Historial: oferta vencida",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en07}}/historial",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Registra el vencimiento\", () => pm.expect(pm.response.json().map(h => h.observaciones).join(\" \")).to.include(\"vencida\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "5. Limpieza: cancelar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en07}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "EN-09 – Servicio caído → 503",
+          "description": "1) En una terminal: docker stop ms-clientes  2) Ejecutá la petición: devuelve 503 y no se crea nada  3) docker start ms-clientes",
+          "item": [
+            {
+              "name": "Crear solicitud con MS-Clientes detenido → 503",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "Antes: docker stop ms-clientes. Después: docker start ms-clientes.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 503\", () => pm.response.to.have.status(503));",
+                      "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(503); pm.expect(b.detail).to.be.a(\"string\"); });",
+                      "pm.test(\"Detalle menciona \\\"clientes\\\"\", () => pm.expect(pm.response.json().detail).to.include(\"clientes\"));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "gateway_url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "keycloak_url",
+      "value": "http://localhost:9090/realms/patito/protocol/openid-connect/token"
+    },
+    {
+      "key": "client_id",
+      "value": "bda-client"
+    },
+    {
+      "key": "ms_solicitudes_url",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "ms_tecnicos_url",
+      "value": "http://localhost:8082"
+    },
+    {
+      "key": "ms_clientes_url",
+      "value": "http://localhost:8083"
+    },
+    {
+      "key": "token_admin",
+      "value": ""
+    },
+    {
+      "key": "token_cliente",
+      "value": ""
+    },
+    {
+      "key": "token_tecnico",
+      "value": ""
+    },
+    {
+      "key": "clienteId",
+      "value": "1"
+    },
+    {
+      "key": "tecnicoId",
+      "value": "1"
+    },
+    {
+      "key": "especialidadId",
+      "value": "1"
+    },
+    {
+      "key": "solicitudId",
+      "value": ""
+    },
+    {
+      "key": "fechaHabil",
+      "value": ""
+    },
+    {
+      "key": "fechaFueraHorario",
+      "value": ""
+    }
+  ]
+}

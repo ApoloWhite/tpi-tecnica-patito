@@ -1,12 +1,12 @@
 {
-  "realm": "bda-realm",
+  "realm": "patito",
   "enabled": true,
   "sslRequired": "none",
   "registrationAllowed": false,
   "accessTokenLifespan": 1800,
   "roles": {
     "realm": [
-      { "name": "ADMIN", "description": "Administrador de Tecnica Patito" },
+      { "name": "ADMINISTRADOR", "description": "Administrador de Tecnica Patito" },
       { "name": "CLIENTE", "description": "Cliente que solicita servicios" },
       { "name": "TECNICO", "description": "Tecnico que atiende solicitudes" }
     ]
@@ -38,7 +38,7 @@
       "credentials": [
         { "type": "password", "value": "admin123", "temporary": false }
       ],
-      "realmRoles": ["ADMIN"]
+      "realmRoles": ["ADMINISTRADOR"]
     },
     {
       "username": "cliente1",

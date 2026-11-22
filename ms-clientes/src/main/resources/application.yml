@@ -1,36 +1,63 @@
 server:
-  port: 8082
+  port: ${SERVER_PORT:8083}
 
 spring:
   application:
     name: ms-clientes
   datasource:
-    url: jdbc:h2:file:./data/clientes-db;AUTO_SERVER=TRUE
+    # H2 en archivo (decisión del equipo). En Docker la carpeta /app/data es un volumen nombrado.
+    url: jdbc:h2:file:${H2_DIR:./data}/clientes-db;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    open-in-view: false
   h2:
     console:
       enabled: true
       path: /h2-console
+      settings:
+        web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # issuer: lo que dice el token (se pide desde el host en localhost:9090)
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/patito}
+          # jwk-set-uri: de dónde se bajan las claves públicas (en Docker: http://keycloak:8080/...)
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/patito/protocol/openid-connect/certs}
 
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    persist-authorization: true
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,loggers
+        include: health,info,metrics,loggers
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    nombre: ${spring.application.name}
+    descripcion: Padrón de clientes de Técnica Patito
+
+app:
+  openapi:
+    titulo: MS-Clientes - Técnica Patito
+    descripcion: Padrón de clientes con domicilio y coordenadas (F2). Roles con token de Keycloak.
 
 logging:
+  pattern:
+    correlation: "[cid:%X{correlationId:-}] "
   level:
     root: INFO
     utnfc.isi.back.tpi: DEBUG
-  file:
-    name: logs/ms-clientes.log

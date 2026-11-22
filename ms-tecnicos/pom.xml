@@ -12,7 +12,7 @@
 
     <artifactId>ms-tecnicos</artifactId>
     <name>ms-tecnicos</name>
-    <description>Padrón de tecnicos, certificaciones, harramientas y zonas</description>
+    <description>Padrón de tecnicos, certificaciones, herramientas y zonas</description>
 
     <dependencies>
         <dependency>
@@ -30,6 +30,18 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>utnfc.isi.back.tpi</groupId>
+            <artifactId>commons-geo</artifactId>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>

@@ -1,0 +1,13 @@
+# Solo para DESARROLLO: Docker Compose lo aplica automáticamente con "docker compose up".
+# Publica los puertos de los microservicios para poder entrar a su Swagger y consola H2.
+# En producción se ignora con: docker compose --file docker-compose.yml up -d --build
+services:
+  ms-solicitudes:
+    ports:
+      - "${MS_SOLICITUDES_PORT:-8081}:8081"
+  ms-tecnicos:
+    ports:
+      - "${MS_TECNICOS_PORT:-8082}:8082"
+  ms-clientes:
+    ports:
+      - "${MS_CLIENTES_PORT:-8083}:8083"

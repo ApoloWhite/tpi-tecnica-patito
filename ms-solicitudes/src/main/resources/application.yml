@@ -1,43 +1,125 @@
 server:
-  port: 8084
+  port: ${SERVER_PORT:8081}
 
 spring:
   application:
     name: ms-solicitudes
   datasource:
-    url: jdbc:h2:file:./data/solicitudes-db;AUTO_SERVER=TRUE
+    # H2 en archivo (decisión del equipo). En Docker la carpeta /app/data es un volumen nombrado.
+    url: jdbc:h2:file:${H2_DIR:./data}/solicitudes-db;AUTO_SERVER=TRUE
     driver-class-name: org.h2.Driver
     username: sa
     password:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        default_batch_fetch_size: 50
   h2:
     console:
       enabled: true
       path: /h2-console
+      settings:
+        web-allow-others: true
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/patito}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/patito/protocol/openid-connect/certs}
 
 springdoc:
+  api-docs:
+    path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+    persist-authorization: true
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,loggers
+        include: health,info,metrics,loggers,circuitbreakers,retries
+  health:
+    circuitbreakers:
+      enabled: true
+  info:
+    env:
+      enabled: true
 
-# URLs de los otros microservicios (los usaremos en la etapa 5)
+info:
+  app:
+    nombre: ${spring.application.name}
+    descripcion: Orquestador del ciclo de vida de las solicitudes
+
 app:
+  openapi:
+    titulo: MS-Solicitudes - Técnica Patito
+    descripcion: Ciclo de vida de las solicitudes (F4 a F9). Orquesta MS-Clientes y MS-Técnicos y calcula el costo de visita.
+  # URLs de los otros microservicios (en Docker se usa el nombre del servicio, nunca localhost)
   clientes:
-    base-url: http://localhost:8082
+    base-url: ${CLIENTES_URL:http://localhost:8083}
   tecnicos:
-    base-url: http://localhost:8083
+    base-url: ${TECNICOS_URL:http://localhost:8082}
+  http:
+    connect-timeout-ms: 2000
+    read-timeout-ms: 5000
+  # API de mapas (commons-geo). Si falla, se usa Haversine (RN-8).
+  geo:
+    base-url: ${GEO_URL:https://router.project-osrm.org}
+    enabled: ${GEO_ENABLED:true}
+    connect-timeout-ms: 2000
+    read-timeout-ms: 3000
+  oferta:
+    # Ventana de aceptación (RN-3). Bajala a 1 para probar EN-07 sin esperar 15 minutos.
+    ventana-minutos: ${OFERTA_VENTANA_MINUTOS:15}
+    # Cada cuánto corre el scheduler que expira ofertas
+    scheduler-ms: ${OFERTA_SCHEDULER_MS:30000}
+  tecnico:
+    # RN-5: máximo de solicitudes por técnico
+    max-en-espera: 2
+    max-en-curso: 1
+
+# Tarifas del costo de visita (RN-8, RN-11)
+tarifas:
+  monto-fijo: 5000.00
+  por-km: 800.00
+  recargo-prioridad: 0.30
+  recargo-fuera-horario: 0.50
+  hora-inicio: 8
+  hora-fin: 18
+
+# Resiliencia de las llamadas a otros microservicios (Ap.18)
+resilience4j:
+  retry:
+    instances:
+      clientes: &reintentos
+        max-attempts: 2
+        wait-duration: 300ms
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+      tecnicos: *reintentos
+  circuitbreaker:
+    instances:
+      clientes: &circuito
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20s
+        permitted-number-of-calls-in-half-open-state: 2
+        register-health-indicator: true
+        allow-health-indicator-to-fail: false
+        ignore-exceptions:
+          - utnfc.isi.back.tpi.solicitudes.exceptions.RecursoNoEncontradoException
+          - utnfc.isi.back.tpi.solicitudes.exceptions.ReglaNegocioException
+          - utnfc.isi.back.tpi.solicitudes.exceptions.ServicioRemotoException
+      tecnicos: *circuito
 
 logging:
+  pattern:
+    correlation: "[cid:%X{correlationId:-}] "
   level:
     root: INFO
     utnfc.isi.back.tpi: DEBUG
-  file:
-    name: logs/ms-solicitudes.log

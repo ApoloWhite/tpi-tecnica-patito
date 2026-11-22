@@ -1,0 +1,3 @@
+# Solo se envía al build el JAR ya compilado
+*
+!target/ms-solicitudes-1.0.0.jar
