@@ -24,14 +24,14 @@ public class CatalogoController {
     }
 
     @GetMapping("/certificaciones")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO','SISTEMA')")
     @Operation(summary = "Listar certificaciones", description = "Cualquier rol. El id se usa como especialidadId en las solicitudes.")
     public ResponseEntity<List<CatalogoResponse>> certificaciones() {
         return ResponseEntity.ok(catalogoService.listarCertificaciones());
     }
 
     @GetMapping("/zonas")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO','SISTEMA')")
     @Operation(summary = "Listar zonas de cobertura", description = "Cualquier rol.")
     public ResponseEntity<List<CatalogoResponse>> zonas() {
         return ResponseEntity.ok(catalogoService.listarZonas());

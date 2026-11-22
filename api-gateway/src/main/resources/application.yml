@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:47380}
 
 spring:
   application:
@@ -8,18 +8,18 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # issuer: lo que dice el token (pedido desde el host en localhost:9090)
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/patito}
+          # issuer: lo que dice el token (pedido desde el host en localhost:47390)
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:47390/realms/patito}
           # jwk-set-uri: de dónde bajar las claves públicas (en Docker: http://keycloak:8080/...)
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/patito/protocol/openid-connect/certs}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:47390/realms/patito/protocol/openid-connect/certs}
 
 app:
   routes:
-    clientes-url: ${CLIENTES_URL:http://localhost:8083}
-    tecnicos-url: ${TECNICOS_URL:http://localhost:8082}
-    solicitudes-url: ${SOLICITUDES_URL:http://localhost:8081}
+    clientes-url: ${CLIENTES_URL:http://localhost:47383}
+    tecnicos-url: ${TECNICOS_URL:http://localhost:47382}
+    solicitudes-url: ${SOLICITUDES_URL:http://localhost:47381}
 
-# Swagger UI unificado en http://localhost:8080/swagger-ui.html
+# Swagger UI unificado en http://localhost:47380/swagger-ui.html
 springdoc:
   api-docs:
     enabled: true

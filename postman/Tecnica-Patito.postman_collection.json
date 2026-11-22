@@ -820,7 +820,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": 2,\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": 2,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": 2,\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": 2,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1023,7 +1023,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1144,8 +1144,8 @@
       ]
     },
     {
-      "name": "04 – Flujo principal",
-      "description": "Proceso de negocio completo: crear → elegir → ofertar → aceptar → presupuesto → aprobar → finalizar → historial. Ejecutar en orden.",
+      "name": "04 – Flujo principal (modo manual)",
+      "description": "Proceso de negocio completo en modo MANUAL: el cliente elige a quién ofertar. crear → elegir → ofertar → aceptar → presupuesto → aprobar → finalizar → historial. Ejecutar en orden.",
       "item": [
         {
           "name": "1. Consultar cliente (coordenadas)",
@@ -1203,7 +1203,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1481,6 +1481,410 @@
       ]
     },
     {
+      "name": "04B – Flujo principal (modo automático)",
+      "description": "Modo AUTOMATICA (F5, RN-3): al crear la solicitud el sistema la oferta solo al técnico más cercano y, si rechaza o deja vencer la oferta, pasa al siguiente. Comparalo con la carpeta 04, donde el cliente elige a mano.",
+      "item": [
+        {
+          "name": "1. Crear solicitud AUTOMÁTICA → se oferta sola al más cercano (F5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes",
+            "description": "Impresoras (especialidad 2): Juan está a 0.58 km y Ana a 0.69 km. Sin llamar a /elegir ni /ofertar, la solicitud nace OFERTADA a Juan.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"Atasca papel en la bandeja\",\n  \"especialidadId\": 2,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"AUTOMATICA\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                  "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));",
+                  "pm.test(\"Ofertada a Juan Pérez\", () => pm.expect(pm.response.json().tecnicoNombre).to.eql(\"Juan Pérez\"));",
+                  "pm.test(\"Modo AUTOMATICA\", () => pm.expect(pm.response.json().modoAsignacion).to.eql(\"AUTOMATICA\"));",
+                  "pm.collectionVariables.set(\"autoId\", pm.response.json().id);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "2. Juan rechaza → el sistema oferta solo a Ana (RN-3)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{autoId}}/rechazar/1",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));",
+                  "pm.test(\"Ofertada a Ana Gómez\", () => pm.expect(pm.response.json().tecnicoNombre).to.eql(\"Ana Gómez\"));",
+                  "pm.test(\"Juan quedó descartado\", () => pm.expect(pm.response.json().tecnicosDescartados).to.include(1));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "3. Ana acepta → ASIGNADA con costo",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{autoId}}/aceptar/2",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado ASIGNADA\", () => pm.expect(pm.response.json().estado).to.eql(\"ASIGNADA\"));",
+                  "pm.test(\"Costo calculado\", () => pm.expect(pm.response.json().total).to.be.above(0));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "4. Ana carga presupuesto",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{autoId}}/presupuesto",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"diagnostico\": \"Engranaje roto en la bandeja\",\n  \"importe\": 2300.0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "5. Cliente aprueba → EN_CURSO",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{autoId}}/aprobar-presupuesto",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado EN_CURSO\", () => pm.expect(pm.response.json().estado).to.eql(\"EN_CURSO\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "6. Ana finaliza → FINALIZADA",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{autoId}}/finalizar",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_tecnico}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Estado FINALIZADA\", () => pm.expect(pm.response.json().estado).to.eql(\"FINALIZADA\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "7. Historial: las ofertas las hizo el sistema",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/{{autoId}}/historial",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const h = pm.response.json();",
+                  "pm.test(\"Recorrido con reoferta automática\", () => pm.expect(h.map(x => x.estadoNuevo)).to.eql([\"PENDIENTE\", \"OFERTADA\", \"PENDIENTE\", \"OFERTADA\", \"ASIGNADA\", \"ASIGNADA\", \"EN_CURSO\", \"FINALIZADA\"]));",
+                  "pm.test(\"Las ofertas las registró el usuario sistema\", () => pm.expect(h.filter(x => x.estadoNuevo === \"OFERTADA\").map(x => x.usuario)).to.eql([\"sistema\", \"sistema\"]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Sin más candidatos: queda en espera (RN-2)",
+          "description": "",
+          "item": [
+            {
+              "name": "1. Crear AUTOMÁTICA de Notebooks Apple → oferta a Ana",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"Apple\",\n  \"modelo\": \"MacBook Air\",\n  \"descripcion\": \"No enciende\",\n  \"especialidadId\": 3,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"AUTOMATICA\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));",
+                      "pm.test(\"Ofertada a Ana Gómez\", () => pm.expect(pm.response.json().tecnicoNombre).to.eql(\"Ana Gómez\"));",
+                      "pm.collectionVariables.set(\"autoSinCandId\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. Ana rechaza → no queda nadie: PENDIENTE",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{autoSinCandId}}/rechazar/2",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_tecnico}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado PENDIENTE\", () => pm.expect(pm.response.json().estado).to.eql(\"PENDIENTE\"));",
+                      "pm.test(\"Sin técnico asignado\", () => pm.expect(pm.response.json().tecnicoId).to.be.null);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. Historial: alerta al administrador",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{autoSinCandId}}/historial",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_admin}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Registra que no hay candidatos\", () => pm.expect(pm.response.json().slice(-1)[0].observaciones).to.include(\"Sin técnicos candidatos\"));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "4. Limpieza: cancelar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{autoSinCandId}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "name": "05 – Escenarios negativos",
       "description": "Rechazos de seguridad y de reglas de negocio. EN-07 y EN-09 necesitan una acción manual: están en la carpeta 06.",
       "item": [
@@ -1606,7 +2010,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1652,7 +2056,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"clienteId\": 999999,\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+              "raw": "{\n  \"clienteId\": 999999,\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -1702,7 +2106,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1883,7 +2287,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -1990,7 +2394,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2097,7 +2501,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2394,7 +2798,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2542,6 +2946,120 @@
           ]
         },
         {
+          "name": "EN-07B – Vencimiento en modo automático",
+          "description": "Igual que EN-07 pero en modo AUTOMATICA: cuando vence la oferta de Juan, el scheduler (con la cuenta de servicio de ms-solicitudes) se la oferta sola a Ana.",
+          "item": [
+            {
+              "name": "1. Crear AUTOMÁTICA de Impresoras → oferta a Juan",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "url": "{{gateway_url}}/api/v1/solicitudes",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                },
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": 2,\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"AUTOMATICA\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 201\", () => pm.response.to.have.status(201));",
+                      "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));",
+                      "pm.collectionVariables.set(\"en07b\", pm.response.json().id);"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "2. (esperar a que venza) Consultar → ofertada a Ana",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en07b}}",
+                "description": "Esperá la ventana (OFERTA_VENTANA_MINUTOS) + hasta 30 s del scheduler.",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                      "pm.test(\"Estado OFERTADA\", () => pm.expect(pm.response.json().estado).to.eql(\"OFERTADA\"));",
+                      "pm.test(\"Ahora la tiene Ana y Juan quedó descartado\", () => { const b = pm.response.json(); pm.expect(b.tecnicoId).to.eql(2); pm.expect(b.tecnicosDescartados).to.include(1); });"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "3. Limpieza: cancelar",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": "{{gateway_url}}/api/v1/solicitudes/{{en07b}}/cancelar",
+                "description": "",
+                "auth": {
+                  "type": "bearer",
+                  "bearer": [
+                    {
+                      "key": "token",
+                      "value": "{{token_cliente}}",
+                      "type": "string"
+                    }
+                  ]
+                }
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test(\"Status 200\", () => pm.response.to.have.status(200));"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "name": "EN-09 – Servicio caído → 503",
           "description": "1) En una terminal: docker stop ms-clientes  2) Ejecutá la petición: devuelve 503 y no se crea nada  3) docker start ms-clientes",
           "item": [
@@ -2569,7 +3087,7 @@
                 },
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false\n}",
+                  "raw": "{\n  \"clienteId\": {{clienteId}},\n  \"tiposServicio\": [\n    \"REPARACION\"\n  ],\n  \"marca\": \"HP\",\n  \"modelo\": \"LaserJet 1020\",\n  \"descripcion\": \"No toma las hojas\",\n  \"especialidadId\": {{especialidadId}},\n  \"prioridad\": \"NORMAL\",\n  \"fechaHoraProgramada\": \"{{fechaHabil}}\",\n  \"esFeriado\": false,\n  \"modoAsignacion\": \"MANUAL\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2599,11 +3117,11 @@
   "variable": [
     {
       "key": "gateway_url",
-      "value": "http://localhost:8080"
+      "value": "http://localhost:47380"
     },
     {
       "key": "keycloak_url",
-      "value": "http://localhost:9090/realms/patito/protocol/openid-connect/token"
+      "value": "http://localhost:47390/realms/patito/protocol/openid-connect/token"
     },
     {
       "key": "client_id",
@@ -2611,15 +3129,15 @@
     },
     {
       "key": "ms_solicitudes_url",
-      "value": "http://localhost:8081"
+      "value": "http://localhost:47381"
     },
     {
       "key": "ms_tecnicos_url",
-      "value": "http://localhost:8082"
+      "value": "http://localhost:47382"
     },
     {
       "key": "ms_clientes_url",
-      "value": "http://localhost:8083"
+      "value": "http://localhost:47383"
     },
     {
       "key": "token_admin",

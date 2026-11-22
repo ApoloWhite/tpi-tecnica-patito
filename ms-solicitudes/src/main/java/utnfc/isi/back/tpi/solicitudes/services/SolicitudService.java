@@ -26,8 +26,10 @@ import utnfc.isi.back.tpi.solicitudes.dtos.SolicitudResponse;
 import utnfc.isi.back.tpi.solicitudes.dtos.TecnicoDto;
 import utnfc.isi.back.tpi.solicitudes.exceptions.RecursoNoEncontradoException;
 import utnfc.isi.back.tpi.solicitudes.exceptions.ReglaNegocioException;
+import utnfc.isi.back.tpi.solicitudes.exceptions.ServicioNoDisponibleException;
 import utnfc.isi.back.tpi.solicitudes.models.EstadoSolicitud;
 import utnfc.isi.back.tpi.solicitudes.models.HistorialEstado;
+import utnfc.isi.back.tpi.solicitudes.models.ModoAsignacion;
 import utnfc.isi.back.tpi.solicitudes.models.Solicitud;
 import utnfc.isi.back.tpi.solicitudes.repositories.HistorialEstadoRepository;
 import utnfc.isi.back.tpi.solicitudes.repositories.SolicitudRepository;
@@ -38,6 +40,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 
 import static utnfc.isi.back.tpi.solicitudes.models.EstadoSolicitud.ASIGNADA;
 import static utnfc.isi.back.tpi.solicitudes.models.EstadoSolicitud.CANCELADA;
@@ -134,12 +137,17 @@ public class SolicitudService {
                 .prioridad(request.prioridad())
                 .fechaHoraProgramada(request.fechaHoraProgramada())
                 .esFeriado(Boolean.TRUE.equals(request.esFeriado()))
+                .modoAsignacion(request.modoAsignacion() == null ? ModoAsignacion.AUTOMATICA : request.modoAsignacion())
                 .estado(PENDIENTE)
                 .fechaCreacion(LocalDateTime.now())
                 .build();
         solicitudRepository.save(solicitud);
         registrarHistorial(solicitud, null, PENDIENTE, "Solicitud creada para el cliente " + solicitud.getClienteNombre());
-        log.info("Solicitud {} creada para el cliente {}", solicitud.getId(), cliente.id());
+        log.info("Solicitud {} creada para el cliente {} (modo {})", solicitud.getId(), cliente.id(),
+                solicitud.getModoAsignacion());
+        if (solicitud.esAutomatica()) {
+            ofertarAutomaticamente(solicitud);
+        }
         return SolicitudResponse.desde(solicitud);
     }
 
@@ -237,26 +245,40 @@ public class SolicitudService {
         exigirEstado(solicitud, OFERTADA, "rechazar la oferta");
         exigirTecnicoOfertado(solicitud, tecnicoId);
         String tecnico = solicitud.getTecnicoNombre();
-        liberarTecnico(solicitud);
+        descartarTecnico(solicitud);
         transicionar(solicitud, PENDIENTE, "Técnico " + tecnico + " rechazó la oferta");
+        if (solicitud.esAutomatica()) {
+            ofertarAutomaticamente(solicitud);
+        }
         return SolicitudResponse.desde(solicitud);
     }
 
+    /** Ids de las ofertas cuyo plazo ya venció (RN-3). El scheduler procesa cada una por separado. */
+    @Transactional(readOnly = true)
+    public List<Long> ofertasVencidas() {
+        return solicitudRepository.findByEstadoAndOfertaExpiraBefore(OFERTADA, LocalDateTime.now()).stream()
+                .map(Solicitud::getId).toList();
+    }
+
     /**
-     * Ventana de 15 minutos (RN-3): las ofertas vencidas vuelven a PENDIENTE.
-     * La llama el {@link OfertaScheduler}. @Version evita que choque con una aceptación simultánea.
+     * Vence una oferta (RN-3): la solicitud vuelve a PENDIENTE y, si es AUTOMATICA, se oferta al
+     * siguiente técnico. Cada solicitud va en su propia transacción; @Version evita chocar con una
+     * aceptación simultánea. La llama el {@link OfertaScheduler}.
      */
     @Transactional
-    public int expirarOfertasVencidas() {
-        List<Solicitud> vencidas = solicitudRepository.findByEstadoAndOfertaExpiraBefore(OFERTADA, LocalDateTime.now());
-        for (Solicitud solicitud : vencidas) {
-            String tecnico = solicitud.getTecnicoNombre();
-            liberarTecnico(solicitud);
-            transicionar(solicitud, PENDIENTE, "Oferta al técnico " + tecnico + " vencida: no respondió en "
-                    + ventanaMinutos + " min", USUARIO_SISTEMA);
-            log.info("Oferta de la solicitud {} vencida, vuelve a PENDIENTE", solicitud.getId());
+    public void expirarOferta(Long id) {
+        Solicitud solicitud = buscar(id);
+        if (solicitud.getEstado() != OFERTADA || !solicitud.getOfertaExpira().isBefore(LocalDateTime.now())) {
+            return;
         }
-        return vencidas.size();
+        String tecnico = solicitud.getTecnicoNombre();
+        descartarTecnico(solicitud);
+        transicionar(solicitud, PENDIENTE, "Oferta al técnico " + tecnico + " vencida: no respondió en "
+                + ventanaMinutos + " min", USUARIO_SISTEMA);
+        log.info("Oferta de la solicitud {} vencida, vuelve a PENDIENTE", id);
+        if (solicitud.esAutomatica()) {
+            ofertarAutomaticamente(solicitud);
+        }
     }
 
     // ------------------------------------------------------------------ F7: diagnóstico y presupuesto
@@ -339,7 +361,7 @@ public class SolicitudService {
         String tecnico = solicitud.getTecnicoNombre();
         transicionar(solicitud, DERIVADA, (motivo == null || motivo.isBlank()
                 ? "La falla supera la certificación" : motivo) + " del técnico " + tecnico);
-        liberarTecnico(solicitud);
+        descartarTecnico(solicitud);
         solicitud.setDistanciaKm(null);
         solicitud.setTiempoEstimadoMin(null);
         solicitud.setFuenteDistancia(null);
@@ -350,7 +372,55 @@ public class SolicitudService {
         solicitud.setDiagnostico(null);
         solicitud.setPresupuesto(null);
         transicionar(solicitud, PENDIENTE, "Vuelve a asignación para buscar otro técnico (RN-2)");
+        if (solicitud.esAutomatica()) {
+            ofertarAutomaticamente(solicitud);
+        }
         return SolicitudResponse.desde(solicitud);
+    }
+
+    // ------------------------------------------------------------------ Asignación automática (F5, RN-3)
+
+    /**
+     * Oferta la solicitud al técnico candidato más cercano que no la haya rechazado antes y que no esté
+     * al límite (RN-2, RN-5, RN-9). Si no hay ninguno, la solicitud queda PENDIENTE y se alerta al
+     * administrador. Si MS-Técnicos no responde, también queda PENDIENTE: no se pierde la solicitud.
+     */
+    private void ofertarAutomaticamente(Solicitud solicitud) {
+        List<CandidatoDto> candidatos;
+        try {
+            candidatos = tecnicosClient.candidatos(solicitud.getEspecialidadId(), solicitud.getLatitud(),
+                    solicitud.getLongitud());
+        } catch (ServicioNoDisponibleException e) {
+            log.warn("No se pudo ofertar automáticamente la solicitud {}: {}", solicitud.getId(), e.getMessage());
+            registrarHistorial(solicitud, PENDIENTE, PENDIENTE, "No se pudo buscar técnicos (MS-Técnicos no disponible). "
+                    + "Queda en espera", USUARIO_SISTEMA);
+            return;
+        }
+        Optional<CandidatoDto> elegido = candidatos.stream()
+                .filter(c -> !solicitud.getTecnicosDescartados().contains(c.tecnicoId()))
+                .filter(c -> !alcanzoLimiteEnEspera(c.tecnicoId()))
+                .findFirst();
+        if (elegido.isEmpty()) {
+            log.warn("ALERTA ADMINISTRADOR: la solicitud {} no tiene técnicos candidatos disponibles", solicitud.getId());
+            registrarHistorial(solicitud, PENDIENTE, PENDIENTE, "Sin técnicos candidatos disponibles: queda en espera "
+                    + "y se alertó al administrador (RN-2)", USUARIO_SISTEMA);
+            return;
+        }
+        CandidatoDto tecnico = elegido.get();
+        solicitud.setTecnicoId(tecnico.tecnicoId());
+        solicitud.setTecnicoNombre(tecnico.nombre() + " " + tecnico.apellido());
+        solicitud.setOfertaExpira(LocalDateTime.now().plusMinutes(ventanaMinutos));
+        transicionar(solicitud, OFERTADA, "Oferta automática al técnico más cercano " + solicitud.getTecnicoNombre()
+                + " (" + tecnico.distanciaKm() + " km). Vence " + solicitud.getOfertaExpira().format(HORA)
+                + " (" + ventanaMinutos + " min)", USUARIO_SISTEMA);
+    }
+
+    /** El técnico actual deja la solicitud: se libera y no se le vuelve a ofertar. */
+    private static void descartarTecnico(Solicitud solicitud) {
+        if (solicitud.getTecnicoId() != null) {
+            solicitud.getTecnicosDescartados().add(solicitud.getTecnicoId());
+        }
+        liberarTecnico(solicitud);
     }
 
     // ------------------------------------------------------------------ Reglas auxiliares

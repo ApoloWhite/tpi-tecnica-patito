@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Rutas del gateway (Ap.19). El cliente solo conoce el puerto 8080: el gateway decide
+ * Rutas del gateway (Ap.19). El cliente solo conoce el puerto 47380: el gateway decide
  * a qué microservicio mandar cada petición según el path. Las URLs salen de la configuración.
  */
 @Configuration

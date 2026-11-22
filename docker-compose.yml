@@ -2,7 +2,8 @@
 #
 # Antes de levantar: mvn clean package -DskipTests   (genera los JAR que copian los Dockerfile)
 # Desarrollo: docker compose up -d --build           (usa también docker-compose.override.yml)
-# Producción: docker compose --file docker-compose.yml up -d --build   (solo publica gateway y Keycloak)
+# Producción: docker compose --file docker-compose.yml up -d --build   (publica gateway, Keycloak y frontend)
+# Frontend: http://localhost:47300
 
 name: tpi-tecnica-patito
 
@@ -13,10 +14,10 @@ x-logging: &logging
     max-size: "10m"
     max-file: "3"
 
-# Variables comunes de seguridad: el token dice que lo emitió localhost:9090 (issuer),
+# Variables comunes de seguridad: el token dice que lo emitió localhost:47390 (issuer),
 # pero dentro de la red de Docker las claves se bajan de keycloak:8080 (jwk-set-uri).
 x-jwt-env: &jwt-env
-  KEYCLOAK_ISSUER_URI: http://localhost:9090/realms/patito
+  KEYCLOAK_ISSUER_URI: http://localhost:47390/realms/patito
   KEYCLOAK_JWK_SET_URI: http://keycloak:8080/realms/patito/protocol/openid-connect/certs
   TZ: America/Argentina/Cordoba
 
@@ -29,13 +30,13 @@ services:
     environment:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
-      # Los tokens siempre dicen "emitido por http://localhost:9090", sin importar desde dónde se piden
-      KC_HOSTNAME: http://localhost:9090
+      # Los tokens siempre dicen "emitido por http://localhost:47390", sin importar desde dónde se piden
+      KC_HOSTNAME: http://localhost:47390
       KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
       KC_HEALTH_ENABLED: "true"
       TZ: America/Argentina/Cordoba
     ports:
-      - "9090:8080"
+      - "47390:8080"
     volumes:
       # :z es necesario en Fedora por SELinux
       - ./keycloak/realm-export.json:/opt/keycloak/data/import/patito.json:ro,z
@@ -59,14 +60,14 @@ services:
       <<: *jwt-env
       H2_DIR: /app/data
     expose:
-      - "8083"
+      - "47383"
     volumes:
       - patito-clientes-data:/app/data
     depends_on:
       keycloak:
         condition: service_healthy
     healthcheck: &healthcheck-ms
-      test: ["CMD-SHELL", "curl -fs http://localhost:8083/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:47383/actuator/health || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 20
@@ -84,7 +85,7 @@ services:
       <<: *jwt-env
       H2_DIR: /app/data
     expose:
-      - "8082"
+      - "47382"
     volumes:
       - patito-tecnicos-data:/app/data
     depends_on:
@@ -92,7 +93,7 @@ services:
         condition: service_healthy
     healthcheck:
       <<: *healthcheck-ms
-      test: ["CMD-SHELL", "curl -fs http://localhost:8082/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:47382/actuator/health || exit 1"]
     networks:
       - tpi-net
     logging: *logging
@@ -106,13 +107,16 @@ services:
       <<: *jwt-env
       H2_DIR: /app/data
       # Los servicios se hablan por nombre, nunca por localhost (Ap.21)
-      CLIENTES_URL: http://ms-clientes:8083
-      TECNICOS_URL: http://ms-tecnicos:8082
+      CLIENTES_URL: http://ms-clientes:47383
+      TECNICOS_URL: http://ms-tecnicos:47382
       GEO_URL: ${GEO_URL:-https://router.project-osrm.org}
       OFERTA_VENTANA_MINUTOS: ${OFERTA_VENTANA_MINUTOS:-15}
       OFERTA_SCHEDULER_MS: ${OFERTA_SCHEDULER_MS:-30000}
+      # Cuenta de servicio (client_credentials) para el scheduler. El secreto viene del .env
+      KEYCLOAK_TOKEN_URI: http://keycloak:8080/realms/patito/protocol/openid-connect/token
+      MS_SOLICITUDES_CLIENT_SECRET: ${MS_SOLICITUDES_CLIENT_SECRET:-patito-secret-dev}
     expose:
-      - "8081"
+      - "47381"
     volumes:
       - patito-solicitudes-data:/app/data
     depends_on:
@@ -122,7 +126,7 @@ services:
         condition: service_healthy
     healthcheck:
       <<: *healthcheck-ms
-      test: ["CMD-SHELL", "curl -fs http://localhost:8081/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:47381/actuator/health || exit 1"]
     networks:
       - tpi-net
     logging: *logging
@@ -134,12 +138,12 @@ services:
     container_name: api-gateway
     environment:
       <<: *jwt-env
-      CLIENTES_URL: http://ms-clientes:8083
-      TECNICOS_URL: http://ms-tecnicos:8082
-      SOLICITUDES_URL: http://ms-solicitudes:8081
+      CLIENTES_URL: http://ms-clientes:47383
+      TECNICOS_URL: http://ms-tecnicos:47382
+      SOLICITUDES_URL: http://ms-solicitudes:47381
     ports:
       # Único punto de entrada al backend
-      - "${GATEWAY_PORT:-8080}:8080"
+      - "${GATEWAY_PORT:-47380}:47380"
     depends_on:
       ms-clientes:
         condition: service_healthy
@@ -149,7 +153,22 @@ services:
         condition: service_healthy
     healthcheck:
       <<: *healthcheck-ms
-      test: ["CMD-SHELL", "curl -fs http://localhost:8080/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fs http://localhost:47380/actuator/health || exit 1"]
+    networks:
+      - tpi-net
+    logging: *logging
+
+  frontend:
+    build:
+      context: ./frontend
+    image: tpi-tecnica-patito/frontend:1.0.0
+    container_name: frontend
+    ports:
+      # Página web para usar el sistema: http://localhost:47300
+      - "${FRONTEND_PORT:-47300}:80"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
     networks:
       - tpi-net
     logging: *logging

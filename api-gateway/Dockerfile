@@ -11,6 +11,6 @@ COPY target/api-gateway-1.0.0.jar app.jar
 
 USER patito
 
-EXPOSE 8080
+EXPOSE 47380
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

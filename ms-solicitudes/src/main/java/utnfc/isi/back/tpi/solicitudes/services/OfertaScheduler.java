@@ -12,7 +12,8 @@ import java.util.UUID;
 
 /**
  * Revisa cada cierto tiempo (app.oferta.scheduler-ms, por defecto 30 s) si hay ofertas
- * cuyo plazo venció y las devuelve a PENDIENTE (RN-3, EN-07).
+ * cuyo plazo venció y las devuelve a PENDIENTE (RN-3, EN-07). En modo AUTOMATICA,
+ * además oferta la solicitud al siguiente técnico candidato.
  */
 @Component
 public class OfertaScheduler {
@@ -29,13 +30,16 @@ public class OfertaScheduler {
     public void expirarOfertas() {
         MDC.put(CorrelationIdFilter.MDC_KEY, "scheduler-" + UUID.randomUUID().toString().substring(0, 8));
         try {
-            int vencidas = solicitudService.expirarOfertasVencidas();
-            if (vencidas > 0) {
-                log.info("Scheduler: {} ofertas vencidas volvieron a PENDIENTE", vencidas);
+            for (Long id : solicitudService.ofertasVencidas()) {
+                try {
+                    solicitudService.expirarOferta(id);
+                } catch (ObjectOptimisticLockingFailureException e) {
+                    // El técnico aceptó justo al mismo tiempo: gana la aceptación
+                    log.warn("Scheduler: la solicitud {} cambió mientras vencía su oferta, se respeta el otro cambio", id);
+                } catch (RuntimeException e) {
+                    log.error("Scheduler: error al vencer la oferta de la solicitud {}", id, e);
+                }
             }
-        } catch (ObjectOptimisticLockingFailureException e) {
-            // Un técnico aceptó justo al mismo tiempo: se respeta la aceptación y se reintenta en la próxima pasada
-            log.warn("Scheduler: conflicto de concurrencia al expirar ofertas, se reintenta en la próxima pasada");
         } finally {
             MDC.remove(CorrelationIdFilter.MDC_KEY);
         }

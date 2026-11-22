@@ -13,6 +13,6 @@ COPY target/ms-solicitudes-1.0.0.jar app.jar
 
 USER patito
 
-EXPOSE 8081
+EXPOSE 47381
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

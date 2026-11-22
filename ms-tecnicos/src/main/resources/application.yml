@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8082}
+  port: ${SERVER_PORT:47382}
 
 spring:
   application:
@@ -24,10 +24,10 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # issuer: lo que dice el token (se pide desde el host en localhost:9090)
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/patito}
+          # issuer: lo que dice el token (se pide desde el host en localhost:47390)
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:47390/realms/patito}
           # jwk-set-uri: de dónde se bajan las claves públicas (en Docker: http://keycloak:8080/...)
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/patito/protocol/openid-connect/certs}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:47390/realms/patito/protocol/openid-connect/certs}
 
 springdoc:
   api-docs:

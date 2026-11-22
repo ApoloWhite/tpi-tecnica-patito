@@ -13,6 +13,6 @@ COPY target/ms-clientes-1.0.0.jar app.jar
 
 USER patito
 
-EXPOSE 8083
+EXPOSE 47383
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -2,6 +2,7 @@ package utnfc.isi.back.tpi.solicitudes.dtos;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import utnfc.isi.back.tpi.solicitudes.models.EstadoSolicitud;
+import utnfc.isi.back.tpi.solicitudes.models.ModoAsignacion;
 import utnfc.isi.back.tpi.solicitudes.models.Prioridad;
 import utnfc.isi.back.tpi.solicitudes.models.Solicitud;
 import utnfc.isi.back.tpi.solicitudes.models.TipoServicio;
@@ -28,6 +29,8 @@ public record SolicitudResponse(
         LocalDateTime fechaHoraProgramada,
         Boolean esFeriado,
         EstadoSolicitud estado,
+        @Schema(example = "AUTOMATICA") ModoAsignacion modoAsignacion,
+        @Schema(description = "Técnicos que rechazaron o dejaron vencer la oferta") List<Long> tecnicosDescartados,
         Long tecnicoId,
         String tecnicoNombre,
         LocalDateTime ofertaExpira,
@@ -46,7 +49,9 @@ public record SolicitudResponse(
         return new SolicitudResponse(s.getId(), s.getClienteId(), s.getClienteNombre(), s.getDomicilio(),
                 s.getLatitud(), s.getLongitud(), s.getTiposServicio().stream().sorted().toList(),
                 s.getMarca(), s.getModelo(), s.getDescripcion(), s.getEspecialidadId(), s.getPrioridad(),
-                s.getFechaHoraProgramada(), s.getEsFeriado(), s.getEstado(), s.getTecnicoId(), s.getTecnicoNombre(),
+                s.getFechaHoraProgramada(), s.getEsFeriado(), s.getEstado(),
+                s.getModoAsignacion() == null ? ModoAsignacion.MANUAL : s.getModoAsignacion(),
+                s.getTecnicosDescartados().stream().sorted().toList(), s.getTecnicoId(), s.getTecnicoNombre(),
                 s.getOfertaExpira(), s.getDistanciaKm(), s.getTiempoEstimadoMin(), s.getFuenteDistancia(),
                 s.getEstrategiaCosto(), s.getCostoBase(), s.getRecargo(), s.getTotal(), s.getDiagnostico(),
                 s.getPresupuesto(), s.getFechaCreacion());

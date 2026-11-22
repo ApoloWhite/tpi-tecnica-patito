@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import utnfc.isi.back.tpi.solicitudes.models.ModoAsignacion;
 import utnfc.isi.back.tpi.solicitudes.models.Prioridad;
 import utnfc.isi.back.tpi.solicitudes.models.TipoServicio;
 
@@ -41,6 +42,10 @@ public record SolicitudRequest(
         LocalDateTime fechaHoraProgramada,
 
         @Schema(example = "false", description = "Si se omite, se toma como día no feriado")
-        Boolean esFeriado
+        Boolean esFeriado,
+
+        @Schema(example = "AUTOMATICA", description = "AUTOMATICA (por defecto): el sistema oferta solo al técnico más cercano. "
+                + "MANUAL: se elige con /elegir y /ofertar")
+        ModoAsignacion modoAsignacion
 ) {
 }

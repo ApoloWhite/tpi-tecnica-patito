@@ -6,9 +6,22 @@
   "accessTokenLifespan": 1800,
   "roles": {
     "realm": [
-      { "name": "ADMINISTRADOR", "description": "Administrador de Tecnica Patito" },
-      { "name": "CLIENTE", "description": "Cliente que solicita servicios" },
-      { "name": "TECNICO", "description": "Tecnico que atiende solicitudes" }
+      {
+        "name": "ADMINISTRADOR",
+        "description": "Administrador de Tecnica Patito"
+      },
+      {
+        "name": "CLIENTE",
+        "description": "Cliente que solicita servicios"
+      },
+      {
+        "name": "TECNICO",
+        "description": "Tecnico que atiende solicitudes"
+      },
+      {
+        "name": "SISTEMA",
+        "description": "Cuenta de servicio para llamadas automáticas entre microservicios"
+      }
     ]
   },
   "clients": [
@@ -22,9 +35,28 @@
       "directAccessGrantsEnabled": true,
       "redirectUris": [
         "https://oauth.pstmn.io/v1/browser-callback",
-        "http://localhost:*"
+        "http://localhost:*",
+        "http://localhost:47300/*"
       ],
-      "webOrigins": ["*"]
+      "webOrigins": [
+        "*"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "+",
+        "pkce.code.challenge.method": "S256"
+      }
+    },
+    {
+      "clientId": "ms-solicitudes",
+      "name": "ms-solicitudes (cuenta de servicio)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "patito-secret-dev",
+      "serviceAccountsEnabled": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false
     }
   ],
   "users": [
@@ -36,9 +68,15 @@
       "lastName": "Admin",
       "email": "admin1@patito.com",
       "credentials": [
-        { "type": "password", "value": "admin123", "temporary": false }
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
       ],
-      "realmRoles": ["ADMINISTRADOR"]
+      "realmRoles": [
+        "ADMINISTRADOR"
+      ]
     },
     {
       "username": "cliente1",
@@ -48,9 +86,15 @@
       "lastName": "Cliente",
       "email": "cliente1@patito.com",
       "credentials": [
-        { "type": "password", "value": "cliente123", "temporary": false }
+        {
+          "type": "password",
+          "value": "cliente123",
+          "temporary": false
+        }
       ],
-      "realmRoles": ["CLIENTE"]
+      "realmRoles": [
+        "CLIENTE"
+      ]
     },
     {
       "username": "tecnico1",
@@ -60,9 +104,23 @@
       "lastName": "Tecnico",
       "email": "tecnico1@patito.com",
       "credentials": [
-        { "type": "password", "value": "tecnico123", "temporary": false }
+        {
+          "type": "password",
+          "value": "tecnico123",
+          "temporary": false
+        }
       ],
-      "realmRoles": ["TECNICO"]
+      "realmRoles": [
+        "TECNICO"
+      ]
+    },
+    {
+      "username": "service-account-ms-solicitudes",
+      "enabled": true,
+      "serviceAccountClientId": "ms-solicitudes",
+      "realmRoles": [
+        "SISTEMA"
+      ]
     }
   ]
 }

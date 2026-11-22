@@ -1,0 +1,4 @@
+# Solo se envía al build lo que usa el Dockerfile
+*
+!nginx.conf
+!public/

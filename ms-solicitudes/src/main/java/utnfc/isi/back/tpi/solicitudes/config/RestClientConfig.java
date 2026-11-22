@@ -11,6 +11,13 @@ import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.client.AuthorizedClientServiceOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientProviderBuilder;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.client.RestClient;
 
@@ -19,9 +26,10 @@ import java.io.IOException;
 /**
  * Un RestClient por microservicio destino (Ap.18), con:
  * <ul>
- *   <li>baseUrl tomada de la configuración (en Docker: http://ms-clientes:8083, etc.).</li>
+ *   <li>baseUrl tomada de la configuración (en Docker: http://ms-clientes:47383, etc.).</li>
  *   <li>Timeouts de conexión y lectura, para no quedar colgados si el otro servicio no responde.</li>
- *   <li>Propagación del token JWT del usuario y del X-Correlation-ID.</li>
+ *   <li>Propagación del token JWT del usuario y del X-Correlation-ID. Si no hay usuario (por ejemplo,
+ *       el scheduler que vence ofertas) se usa el token de la cuenta de servicio de ms-solicitudes.</li>
  *   <li>Log de cada llamada saliente: método, URI, status y tiempo (sin datos sensibles).</li>
  * </ul>
  */
@@ -29,6 +37,16 @@ import java.io.IOException;
 public class RestClientConfig {
 
     private static final Logger log = LoggerFactory.getLogger(RestClientConfig.class);
+    private static final String CUENTA_SERVICIO = "ms-solicitudes";
+
+    private final OAuth2AuthorizedClientManager cuentaServicio;
+
+    public RestClientConfig(ClientRegistrationRepository registros, OAuth2AuthorizedClientService clientes) {
+        AuthorizedClientServiceOAuth2AuthorizedClientManager manager =
+                new AuthorizedClientServiceOAuth2AuthorizedClientManager(registros, clientes);
+        manager.setAuthorizedClientProvider(OAuth2AuthorizedClientProviderBuilder.builder().clientCredentials().build());
+        this.cuentaServicio = manager;
+    }
 
     @Bean
     public RestClient clientesRestClient(RestClient.Builder builder,
@@ -64,8 +82,8 @@ public class RestClientConfig {
                 .build();
     }
 
-    /** Copia el token del usuario y el correlation id en la llamada saliente. */
-    private static ClientHttpRequestInterceptor propagarContexto() {
+    /** Copia el token (del usuario o de la cuenta de servicio) y el correlation id en la llamada saliente. */
+    private ClientHttpRequestInterceptor propagarContexto() {
         return (request, body, execution) -> {
             String correlationId = MDC.get(CorrelationIdFilter.MDC_KEY);
             if (correlationId != null) {
@@ -74,9 +92,26 @@ public class RestClientConfig {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             if (auth instanceof JwtAuthenticationToken jwt) {
                 request.getHeaders().setBearerAuth(jwt.getToken().getTokenValue());
+            } else {
+                String tokenServicio = tokenCuentaServicio();
+                if (tokenServicio != null) {
+                    request.getHeaders().setBearerAuth(tokenServicio);
+                }
             }
             return execution.execute(request, body);
         };
+    }
+
+    /** Token client_credentials de Keycloak. Spring lo guarda y lo renueva solo cuando vence. */
+    private String tokenCuentaServicio() {
+        try {
+            OAuth2AuthorizedClient cliente = cuentaServicio.authorize(OAuth2AuthorizeRequest
+                    .withClientRegistrationId(CUENTA_SERVICIO).principal(CUENTA_SERVICIO).build());
+            return cliente == null ? null : cliente.getAccessToken().getTokenValue();
+        } catch (RuntimeException e) {
+            log.warn("No se pudo obtener el token de la cuenta de servicio: {}", e.getMessage());
+            return null;
+        }
     }
 
     private static ClientHttpRequestInterceptor registrarLlamada() {

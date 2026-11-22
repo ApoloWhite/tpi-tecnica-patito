@@ -72,7 +72,7 @@ public class ClienteController {
     }
 
     @GetMapping("/{clienteId}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','SISTEMA')")
     @Operation(summary = "Consultar un cliente", description = "Roles: ADMINISTRADOR, CLIENTE. Incluye las coordenadas.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Cliente encontrado"),

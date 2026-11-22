@@ -62,7 +62,7 @@ public class TecnicoController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO','SISTEMA')")
     @Operation(summary = "Listar técnicos (paginado)", description = "Cualquier rol. Filtro opcional por disponibilidad.")
     @ApiResponse(responseCode = "200", description = "Página de técnicos")
     public ResponseEntity<Page<TecnicoResponse>> listar(
@@ -73,7 +73,7 @@ public class TecnicoController {
     }
 
     @GetMapping("/candidatos")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO','SISTEMA')")
     @Operation(summary = "Buscar candidatos para una solicitud",
             description = "Técnicos disponibles, con la certificación pedida y a menos de 13 km (Haversine). "
                     + "Ordenados del más cercano al más lejano (RN-2, RN-9).")
@@ -93,7 +93,7 @@ public class TecnicoController {
     }
 
     @GetMapping("/{tecnicoId}")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE','TECNICO','SISTEMA')")
     @Operation(summary = "Consultar un técnico", description = "Cualquier rol. Incluye disponibilidad y certificaciones.")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Técnico encontrado"),

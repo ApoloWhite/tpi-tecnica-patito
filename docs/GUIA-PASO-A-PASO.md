@@ -1,6 +1,8 @@
 # Guía paso a paso: Técnica Patito explicado fácil
 
-Esta guía explica cómo funciona el sistema, cómo encenderlo y cómo mostrar el flujo completo con **Swagger** y con **Postman**. No hace falta saber nada de antemano: vamos de a poquito.
+Esta guía explica cómo funciona el sistema, cómo encenderlo y cómo mostrar el flujo completo con el **frontend web**, con **Swagger** y con **Postman**. No hace falta saber nada de antemano: vamos de a poquito.
+
+> 📚 Cuando termines esta guía, seguí con [COMO-FUNCIONA.md](COMO-FUNCIONA.md) (qué pasa por dentro) y con la carpeta [codigo/](codigo/) (el código explicado línea por línea). El índice completo está en [docs/README.md](README.md).
 
 ---
 
@@ -10,18 +12,20 @@ Imaginá que Técnica Patito es un **edificio** con varias salas. Cada sala hace
 
 | En el edificio | En el sistema | Qué hace |
 |---|---|---|
-| 🎟️ La **boletería** | **Keycloak** (puerto 9090) | Te da una **pulsera** (el *token*) que dice quién sos: CLIENTE, TECNICO o ADMINISTRADOR |
-| 🚪 El **señor de la puerta** | **API Gateway** (puerto 8080) | Mira tu pulsera. Si no tenés o es falsa, no pasás (**401**). Si está bien, te lleva a la sala que corresponde |
-| 👥 La **sala de clientes** | **ms-clientes** (8083) | Guarda a los clientes y dónde viven (calle, barrio, latitud y longitud) |
-| 🔧 La **sala de técnicos** | **ms-tecnicos** (8082) | Guarda a los técnicos, qué saben arreglar (certificaciones) y busca a los que están cerca |
-| 🧠 La **sala de control** | **ms-solicitudes** (8081) | Es el cerebro: recibe los pedidos de arreglo y los mueve paso a paso hasta terminar |
+| 🎟️ La **boletería** | **Keycloak** (puerto 47390) | Te da una **pulsera** (el *token*) que dice quién sos: CLIENTE, TECNICO o ADMINISTRADOR |
+| 🚪 El **señor de la puerta** | **API Gateway** (puerto 47380) | Mira tu pulsera. Si no tenés o es falsa, no pasás (**401**). Si está bien, te lleva a la sala que corresponde |
+| 👥 La **sala de clientes** | **ms-clientes** (47383) | Guarda a los clientes y dónde viven (calle, barrio, latitud y longitud) |
+| 🔧 La **sala de técnicos** | **ms-tecnicos** (47382) | Guarda a los técnicos, qué saben arreglar (certificaciones) y busca a los que están cerca |
+| 🧠 La **sala de control** | **ms-solicitudes** (47381) | Es el cerebro: recibe los pedidos de arreglo y los mueve paso a paso hasta terminar |
 | 🗺️ El **mapa** | **OSRM** (internet) | Dice cuántos km hay de verdad por la calle entre el técnico y el cliente |
+| 🖥️ La **vidriera** | **Frontend** (puerto 47300) | Una página web con botones para que el cliente, el técnico y el admin usen el sistema sin escribir JSON |
 
 Algunas reglas del edificio:
-- **Siempre se entra por la puerta** (8080). Nadie va directo a las salas.
+- **Siempre se entra por la puerta** (47380). Nadie va directo a las salas.
 - **Cada sala tiene su cuaderno** (su base de datos H2) y nadie escribe en el cuaderno de otra.
 - **Cada sala mira tu pulsera de nuevo.** Si tu rol no puede hacer algo ahí, te dice **403** ("no tenés permiso").
 - Cuando el cerebro necesita datos de otra sala, **le pregunta por teléfono** (una llamada REST) y le muestra tu misma pulsera.
+- A veces el cerebro tiene que llamar a otra sala **sin que haya una persona** (por ejemplo, el reloj que vence las ofertas). Para eso tiene su **propia pulsera de empleado** (la *cuenta de servicio* `ms-solicitudes`, con el rol `SISTEMA`).
 - Si una sala no atiende el teléfono, el cerebro intenta otra vez y, si sigue sin atender, te dice **503** ("esa sala está cerrada"). Nunca se queda colgado esperando.
 
 ### ¿Qué es un token?
@@ -56,8 +60,15 @@ Carlos García (cliente 1) tiene una impresora que no toma las hojas. Esto es lo
 PENDIENTE → OFERTADA → ASIGNADA → EN_CURSO → FINALIZADA
 ```
 
+### ¿Quién le ofrece el trabajo a Juan? Dos formas
+
+Cuando Carlos crea la solicitud, elige cómo se asigna el técnico (`modoAsignacion`):
+
+- **AUTOMATICA** (la normal): el cerebro hace los pasos 2 y 3 **solito**, en el mismo momento en que se crea la solicitud. La solicitud nace directamente `OFERTADA` a Juan. Si Juan dice que no, o no contesta en 15 minutos, el cerebro se la ofrece **sola** al siguiente más cercano (Ana, si la falla es de impresoras). Si ya no queda nadie, queda `PENDIENTE` y avisa al administrador.
+- **MANUAL**: Carlos (o el admin) hace los pasos 2 y 3 a mano. Primero pide la lista de candidatos con su costo (`/elegir`) y después elige a quién ofrecerle (`/ofertar`). Sirve para mostrar en detalle cada paso.
+
 Y si algo sale distinto:
-- Juan **rechaza** o **no contesta en 15 minutos** → la solicitud vuelve a `PENDIENTE` para ofrecérsela a otro.
+- Juan **rechaza** o **no contesta en 15 minutos** → la solicitud vuelve a `PENDIENTE`. En modo automático, el sistema se la ofrece enseguida al siguiente técnico.
 - Carlos **no acepta el presupuesto** → `CANCELADA`.
 - **Falta un repuesto** → `REPROGRAMADA`, y cuando llega, vuelve a `EN_CURSO`.
 - **Juan no sabe arreglar esa falla** → `DERIVADA`, y vuelve a `PENDIENTE` para buscar otro técnico.
@@ -70,7 +81,7 @@ Y si algo sale distinto:
 Si tenés servicios corriendo con `mvn spring-boot:run`, cortalos con **Ctrl+C** en cada terminal. Para ver si queda algo en esos puertos:
 
 ```bash
-ss -ltnp | grep -E ':(8080|8081|8082|8083|9090)'
+ss -ltnp | grep -E ':(47380|47381|47382|47383|47390)'
 ```
 
 Si aparece un proceso `java`, cerralo con `kill <pid>`.
@@ -99,24 +110,59 @@ docker compose ps
 ```
 NAME             STATUS
 api-gateway      Up (healthy)
+frontend         Up
 keycloak         Up (healthy)
 ms-clientes      Up (healthy)
 ms-solicitudes   Up (healthy)
 ms-tecnicos      Up (healthy)
 ```
 
-> 💡 Docker los enciende en orden: primero Keycloak; cuando está sano, clientes y técnicos; después solicitudes y, al final, el gateway. Eso lo hacen los `healthcheck` y el `depends_on` del `docker-compose.yml`.
+> 💡 Docker los enciende en orden: primero Keycloak; cuando está sano, clientes y técnicos; después solicitudes, el gateway y, al final, el frontend. Eso lo hacen los `healthcheck` y el `depends_on` del `docker-compose.yml`.
 
 Para apagar: `docker compose down`. Para apagar y **borrar los datos** (empezar de cero): `docker compose down -v`.
 
 ---
 
-## 4. Swagger: el menú del restaurante
+## 4. El frontend: la forma más fácil de mostrarlo
+
+Entrá a 👉 **http://localhost:47300**. Te lleva a la pantalla de login de Keycloak (la boletería). Iniciá sesión con uno de estos usuarios:
+
+| Usuario | Contraseña | Qué puede hacer en la página |
+|---|---|---|
+| `cliente1` | `cliente123` | Crear solicitudes, buscar candidatos, ofertar (modo manual), aprobar o rechazar presupuestos, cancelar |
+| `tecnico1` | `tecnico123` | Aceptar o rechazar ofertas, cargar presupuestos, finalizar, reprogramar, derivar, cambiar disponibilidad |
+| `admin1` | `admin123` | Todo lo anterior, más ver la lista de clientes |
+
+> 💡 La página **no** pide la contraseña ella misma: te manda a Keycloak, Keycloak te devuelve a la página con un código, y la página lo cambia por el token. Ese es el flujo **Authorization Code + PKCE**, el que recomiendan los apuntes.
+
+### Una demo completa con el frontend (modo automático)
+Para cambiar de usuario, tocá **Salir** arriba a la derecha.
+
+1. **Como `cliente1`**: andá a **Nueva solicitud**. Dejá cliente `1`, elegí la especialidad **Impresoras** y dejá marcada la asignación **Automática**. Tocá **Crear solicitud**.
+   → Aparece un aviso: *"Se ofertó automáticamente a Juan Pérez"*. En el detalle se ve la cuenta regresiva de la oferta.
+2. **Salí y entrá como `tecnico1`**: arriba, en **"Soy el técnico"**, elegí **Juan Pérez**. Abrí la solicitud y tocá **Rechazar**.
+   → El aviso dice que el sistema buscó al siguiente. En el detalle, la oferta ahora es para **Ana Gómez** y Juan figura como **descartado**.
+3. Cambiá **"Soy el técnico"** a **Ana Gómez**. Tocá **Aceptar oferta**.
+   → Pasa a **ASIGNADA** y aparece el recuadro del costo: km, fuente (OSRM), estrategia, base, recargo y visita.
+4. Todavía como técnico: completá el **diagnóstico** y el **importe** y tocá **Cargar presupuesto**.
+5. **Salí y entrá como `cliente1`**: abrí la solicitud y tocá **Aprobar presupuesto** → **EN_CURSO**.
+6. **Como `tecnico1`** (con Ana elegida): tocá **Finalizar trabajo** → **FINALIZADA**.
+7. Abajo del detalle está el **Historial**: cada paso con fecha, hora y quién lo hizo. Las ofertas aparecen hechas por `sistema`.
+
+> 💡 La lista se actualiza sola cada 4 segundos. Si dejás vencer una oferta (con `OFERTA_VENTANA_MINUTOS=1`, ver EN-07 en la sección 6), la vas a ver pasar sola al siguiente técnico.
+
+Para mostrar el **modo manual**, en el paso 1 elegí **Manual**: la solicitud queda **PENDIENTE** y aparece el botón **Buscar candidatos y ofertar**, con la lista de técnicos, la distancia y el costo de cada uno.
+
+> ⚠️ En Keycloak, `tecnico1` no está atado a un técnico del padrón. Por eso la página te deja elegir "Soy el técnico". Es una simplificación para la demo: el backend no valida qué técnico real sos.
+
+---
+
+## 5. Swagger: el menú del restaurante
 
 **Swagger** es una página web que muestra **todos los pedidos que podés hacer** (los endpoints), qué datos llevan y qué te pueden contestar. Además tiene un botón para **probarlos ahí mismo**.
 
 ### Paso 1: abrir Swagger
-Entrá a 👉 **http://localhost:8080/swagger-ui.html**
+Entrá a 👉 **http://localhost:47380/swagger-ui.html**
 
 Arriba a la derecha hay un selector **"Select a definition"** con las tres salas: **MS-Solicitudes**, **MS-Técnicos** y **MS-Clientes**.
 
@@ -124,7 +170,7 @@ Arriba a la derecha hay un selector **"Select a definition"** con las tres salas
 Swagger no la pide por vos, así que la sacamos de Keycloak con la terminal:
 
 ```bash
-curl -s -X POST http://localhost:9090/realms/patito/protocol/openid-connect/token \
+curl -s -X POST http://localhost:47390/realms/patito/protocol/openid-connect/token \
   -d grant_type=password -d client_id=bda-client \
   -d username=cliente1 -d password=cliente123
 ```
@@ -153,7 +199,7 @@ Con el token de **cliente1**, andá a **MS-Técnicos** → `POST /api/v1/tecnico
 
 ---
 
-## 5. Postman: el control remoto
+## 6. Postman: el control remoto
 
 Swagger sirve para probar de a un pedido. **Postman** sirve para guardar una **lista de pedidos en orden** y apretar un solo botón para que se ejecuten todos y te diga cuáles salieron bien. Es lo que vamos a usar para la demostración.
 
@@ -173,7 +219,8 @@ Técnica Patito – Backend
 ├── 01 – Clientes
 ├── 02 – Técnicos
 ├── 03 – Solicitudes
-├── 04 – Flujo principal        ← la historia de Carlos y Juan
+├── 04 – Flujo principal (modo manual)      ← la historia, paso a paso a mano
+├── 04B – Flujo principal (modo automático) ← el sistema elige solo
 ├── 05 – Escenarios negativos   ← cosas que TIENEN que fallar
 └── 06 – Escenarios manuales    ← necesitan que hagas algo afuera
 ```
@@ -193,8 +240,8 @@ Cada petición tiene una pestaña **Tests** con chequeos automáticos. Por ejemp
 
 Algunos tests también **guardan datos para el paso siguiente**. Por ejemplo, al crear una solicitud se guarda su `id` en la variable `solicitudId`, y el pedido de ofertar usa `{{solicitudId}}` en la URL.
 
-### Paso 4: mostrar el flujo principal (la historia de la sección 2)
-Abrí la carpeta **04 – Flujo principal** y ejecutá los pedidos **en orden**, uno por uno. Contá qué pasa en cada uno:
+### Paso 4: mostrar el flujo principal en modo manual (la historia de la sección 2)
+Abrí la carpeta **04 – Flujo principal (modo manual)** y ejecutá los pedidos **en orden**, uno por uno. Contá qué pasa en cada uno:
 
 | # | Pedido | Quién | Qué mostrar en la respuesta |
 |---|---|---|---|
@@ -209,6 +256,20 @@ Abrí la carpeta **04 – Flujo principal** y ejecutá los pedidos **en orden**,
 | 9 | **EP-05** Historial | ADMIN | La lista de pasos: PENDIENTE → OFERTADA → ASIGNADA → ASIGNADA (presupuesto) → EN_CURSO → FINALIZADA, cada uno con fecha, hora y usuario |
 
 > 💡 Fijate en la columna "Quién": cada paso lo hace el rol que corresponde en la vida real. El cliente crea y aprueba; el técnico acepta, presupuesta y finaliza.
+
+### Paso 4B: el mismo flujo en modo automático
+Abrí **04B – Flujo principal (modo automático)** y ejecutá en orden. Fijate que **no hay** pedidos de "elegir" ni de "ofertar": los hace el sistema.
+
+| # | Pedido | Qué mostrar |
+|---|---|---|
+| 1 | Crear solicitud AUTOMÁTICA (Impresoras) | **201**, pero ya viene `estado: OFERTADA` a **Juan Pérez**, el más cercano |
+| 2 | Juan rechaza | Sigue `OFERTADA`, pero ahora a **Ana Gómez**. `tecnicosDescartados: [1]` |
+| 3 a 6 | Ana acepta, presupuesta, el cliente aprueba y Ana finaliza | Igual que en el modo manual |
+| 7 | Historial | Las dos ofertas las hizo el usuario `sistema` |
+
+La subcarpeta **"Sin más candidatos"** muestra qué pasa si rechaza el único técnico que sabe arreglar esa falla: la solicitud queda `PENDIENTE` y en el historial dice *"se alertó al administrador"*.
+
+> 🧠 Para explicar la diferencia en la defensa: en el **modo manual** la carpeta 04 tiene 9 pasos y el cliente elige al técnico. En el **automático** (04B), el cliente solo crea la solicitud y el sistema hace la búsqueda y la oferta.
 
 ### Paso 5: mostrar que las reglas funcionan (lo que tiene que fallar)
 Abrí **05 – Escenarios negativos**:
@@ -243,7 +304,7 @@ Todos los errores tienen la misma forma (se llama **ProblemDetail**):
 2. Destildá la carpeta **06 – Escenarios manuales**.
 3. Tocá **Run Técnica Patito – Backend**.
 
-Postman ejecuta las carpetas 00 a 05 (61 peticiones) y muestra cuántos tests pasaron: tienen que ser **todos verdes**. Lo podés correr las veces que quieras, porque los escenarios limpian lo que crean.
+Postman ejecuta las carpetas 00 a 05, incluida la 04B (72 peticiones), y muestra cuántos tests pasaron: tienen que ser **todos verdes**. Lo podés correr las veces que quieras, porque los escenarios limpian lo que crean.
 
 ### Paso 7: los escenarios manuales (carpeta 06)
 
@@ -261,11 +322,12 @@ Esperar 15 minutos en una demo es mucho. Por eso la ventana se puede achicar:
 3. En Postman, carpeta `06 → EN-07`: ejecutá **1. Crear** y **2. Ofertar**.
 4. Esperá **un minuto y medio**: el reloj del sistema revisa cada 30 segundos.
 5. Ejecutá **3. Consultar**: volvió a `PENDIENTE`. **4. Historial** muestra "Oferta vencida" y el usuario `sistema`.
-6. Al terminar, volvé el `.env` a `15` y ejecutá `docker compose up -d ms-solicitudes`.
+6. **EN-07B** (misma espera, en modo automático): ejecutá **1. Crear**, esperá un minuto y medio y ejecutá **2. Consultar**. La oferta de Juan venció y el sistema se la ofreció sola a **Ana**: lo hizo el reloj, con la pulsera de empleado de ms-solicitudes.
+7. Al terminar, volvé el `.env` a `15` y ejecutá `docker compose up -d ms-solicitudes`.
 
 ---
 
-## 6. Mirar adentro de las salas
+## 7. Mirar adentro de las salas
 
 **Los logs (el cuaderno de actividad):**
 
@@ -282,16 +344,16 @@ docker compose logs | grep <correlationId>
 Vas a ver la misma petición pasando por el gateway, por ms-solicitudes y por ms-clientes.
 
 **La base de datos (el cuaderno de cada sala):**
-Entrá a http://localhost:8083/h2-console (clientes) y completá:
+Entrá a http://localhost:47383/h2-console (clientes) y completá:
 - JDBC URL: `jdbc:h2:file:/app/data/clientes-db;AUTO_SERVER=TRUE`
 - User: `sa`
 - Password: (vacío)
 
-Para técnicos usá el puerto 8082 y `tecnicos-db`; para solicitudes, el 8081 y `solicitudes-db`.
+Para técnicos usá el puerto 47382 y `tecnicos-db`; para solicitudes, el 47381 y `solicitudes-db`.
 
 ---
 
-## 7. Si algo no anda
+## 8. Si algo no anda
 
 | Problema | Qué hacer |
 |---|---|
@@ -300,5 +362,7 @@ Para técnicos usá el puerto 8082 y `tecnicos-db`; para solicitudes, el 8081 y 
 | `docker compose up` falla con `target/...jar not found` | Te faltó `mvn clean package -DskipTests` |
 | Un contenedor queda `unhealthy` | Mirá qué le pasa con `docker compose logs <nombre>` |
 | `fuenteDistancia` dice `HAVERSINE` en vez de `OSRM` | No hay internet o OSRM no respondió: el sistema usó el cálculo en línea recta. Está bien, es el respaldo de RN-8 |
+| El frontend queda en blanco o no abre el login | Revisá que Keycloak esté sano (`docker compose ps`). Si cambiaste el realm: `docker compose up -d --force-recreate keycloak`. La página necesita internet para bajar keycloak-js |
+| En el frontend todo da 401 | Tocá **Salir** y volvé a entrar |
 | Los datos quedaron raros | `docker compose down -v` y volvé a levantar: los DataLoader recargan los datos de prueba |
 | VS Code marca errores rojos pero Maven compila | `Ctrl+Shift+P` → **Java: Clean Java Language Server Workspace** → **Reload and delete** |

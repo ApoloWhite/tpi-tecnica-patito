@@ -87,6 +87,19 @@ public class Solicitud {
     @Column(nullable = false)
     private Boolean esFeriado;
 
+    /** AUTOMATICA o MANUAL. Columna nullable para no romper bases H2 viejas: null se toma como MANUAL. */
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private ModoAsignacion modoAsignacion;
+
+    /** Técnicos que ya rechazaron, dejaron vencer o derivaron esta solicitud: no se les vuelve a ofertar. */
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "solicitud_tecnico_descartado", joinColumns = @JoinColumn(name = "solicitud_id"))
+    @Column(name = "tecnico_id", nullable = false)
+    @ToString.Exclude
+    @Builder.Default
+    private Set<Long> tecnicosDescartados = new HashSet<>();
+
     // --- Snapshot del técnico y oferta ---
     private Long tecnicoId;
     @Column(length = 170)
@@ -115,4 +128,8 @@ public class Solicitud {
 
     @Column(nullable = false)
     private LocalDateTime fechaCreacion;
+
+    public boolean esAutomatica() {
+        return modoAsignacion == ModoAsignacion.AUTOMATICA;
+    }
 }

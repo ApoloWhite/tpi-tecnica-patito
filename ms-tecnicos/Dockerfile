@@ -13,6 +13,6 @@ COPY target/ms-tecnicos-1.0.0.jar app.jar
 
 USER patito
 
-EXPOSE 8082
+EXPOSE 47382
 
 ENTRYPOINT ["java", "-jar", "app.jar"]

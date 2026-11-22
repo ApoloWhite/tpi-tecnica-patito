@@ -4,10 +4,10 @@
 services:
   ms-solicitudes:
     ports:
-      - "${MS_SOLICITUDES_PORT:-8081}:8081"
+      - "${MS_SOLICITUDES_PORT:-47381}:47381"
   ms-tecnicos:
     ports:
-      - "${MS_TECNICOS_PORT:-8082}:8082"
+      - "${MS_TECNICOS_PORT:-47382}:47382"
   ms-clientes:
     ports:
-      - "${MS_CLIENTES_PORT:-8083}:8083"
+      - "${MS_CLIENTES_PORT:-47383}:47383"

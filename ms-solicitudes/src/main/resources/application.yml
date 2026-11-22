@@ -1,5 +1,5 @@
 server:
-  port: ${SERVER_PORT:8081}
+  port: ${SERVER_PORT:47381}
 
 spring:
   application:
@@ -27,8 +27,20 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:9090/realms/patito}
-          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:9090/realms/patito/protocol/openid-connect/certs}
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:47390/realms/patito}
+          jwk-set-uri: ${KEYCLOAK_JWK_SET_URI:http://localhost:47390/realms/patito/protocol/openid-connect/certs}
+      # Cuenta de servicio de ms-solicitudes: se usa cuando no hay un usuario detrás (scheduler)
+      client:
+        registration:
+          ms-solicitudes:
+            provider: keycloak
+            client-id: ms-solicitudes
+            # Valor de desarrollo; en Docker llega por la variable MS_SOLICITUDES_CLIENT_SECRET (.env)
+            client-secret: ${MS_SOLICITUDES_CLIENT_SECRET:patito-secret-dev}
+            authorization-grant-type: client_credentials
+        provider:
+          keycloak:
+            token-uri: ${KEYCLOAK_TOKEN_URI:http://localhost:47390/realms/patito/protocol/openid-connect/token}
 
 springdoc:
   api-docs:
@@ -60,9 +72,9 @@ app:
     descripcion: Ciclo de vida de las solicitudes (F4 a F9). Orquesta MS-Clientes y MS-Técnicos y calcula el costo de visita.
   # URLs de los otros microservicios (en Docker se usa el nombre del servicio, nunca localhost)
   clientes:
-    base-url: ${CLIENTES_URL:http://localhost:8083}
+    base-url: ${CLIENTES_URL:http://localhost:47383}
   tecnicos:
-    base-url: ${TECNICOS_URL:http://localhost:8082}
+    base-url: ${TECNICOS_URL:http://localhost:47382}
   http:
     connect-timeout-ms: 2000
     read-timeout-ms: 5000
