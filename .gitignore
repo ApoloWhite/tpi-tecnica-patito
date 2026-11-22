@@ -1,0 +1,24 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.vscode/
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+
+# Bases H2 y logs
+data/
+logs/
+*.mv.db
+*.trace.db
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Secretos
+.env

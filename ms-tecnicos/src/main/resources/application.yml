@@ -1,0 +1,36 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: ms-tecnicos
+  datasource:
+    url: jdbc:h2:file:./data/tecnicos-db;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,loggers
+
+logging:
+  level:
+    root: INFO
+    utnfc.isi.back.tpi: DEBUG
+  file:
+    name: logs/ms-tecnicos.log
