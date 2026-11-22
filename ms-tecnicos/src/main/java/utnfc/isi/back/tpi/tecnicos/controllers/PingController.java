@@ -1,4 +1,4 @@
-package main.resources.java.utnfc.isi.back.tpi.tecnicos.controllers;
+package java.utnfc.isi.back.tpi.tecnicos.controllers;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
