@@ -7,6 +7,7 @@ Backend de microservicios para una empresa de servicios técnicos domiciliarios 
 Incluye un **frontend web** (http://localhost:47300) para usar el sistema con los tres roles.
 
 > ¿Primera vez? Empezá por el [índice de la documentación](docs/README.md):
+> - [Accesos](docs/ACCESOS.md): todos los enlaces, usuarios y contraseñas (Keycloak, H2, Swagger, frontend).
 > - [Guía paso a paso](docs/GUIA-PASO-A-PASO.md): cómo levantar todo y usar el frontend, Swagger y Postman.
 > - [Cómo funciona](docs/COMO-FUNCIONA.md): el viaje de una petición por dentro y un diccionario de conceptos.
 > - [El código explicado](docs/codigo/): cada módulo, archivo por archivo y línea por línea.

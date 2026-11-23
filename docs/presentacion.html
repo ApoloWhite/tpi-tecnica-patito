@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Técnica Patito · Presentación TPI</title>
+<style>
+  :root {
+    --fondo: #e9edf3;
+    --slide: #ffffff;
+    --tinta: #14213d;
+    --suave: #52607a;
+    --linea: #d8dee8;
+    --acento: #1f5fbf;
+    --acento-suave: #e3ecfb;
+    --pato: #e0a100;
+    --pato-suave: #fff4cc;
+    --ok: #1f8a52;
+    --ok-suave: #ddf3e6;
+    --mal: #b3373b;
+    --mal-suave: #fbe2e2;
+    --violeta: #6b3fc0;
+    --violeta-suave: #ede5fb;
+    --codigo: #0f1b2d;
+    --mono: "JetBrains Mono", "Fira Code", "DejaVu Sans Mono", Consolas, monospace;
+    --sans: Inter, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: var(--fondo); color: var(--tinta); font-family: var(--sans); overflow: hidden; }
+
+  /* ---------- Escenario 16:9 que escala a la pantalla ---------- */
+  #escenario { position: fixed; inset: 0; display: grid; place-items: center; }
+  #lienzo { width: 1280px; height: 720px; position: relative; transform-origin: center center; }
+  .slide {
+    position: absolute; inset: 0; background: var(--slide); border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(20, 33, 61, .18); padding: 54px 70px 60px;
+    display: none; flex-direction: column; overflow: hidden;
+  }
+  .slide.activa { display: flex; }
+  .slide::after {          /* franja inferior con el número */
+    content: attr(data-num); position: absolute; right: 28px; bottom: 18px;
+    font: 600 14px var(--mono); color: var(--suave);
+  }
+  .slide::before {
+    content: "Técnica Patito S.R.L. · TPI Backend de Aplicaciones · 3K1 · Grupo 107";
+    position: absolute; left: 70px; bottom: 18px; font-size: 13px; color: var(--suave);
+  }
+  .portada::before, .portada::after { display: none; }
+
+  /* ---------- Tipografía ---------- */
+  .seccion { font: 700 14px var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--acento); margin-bottom: 8px; }
+  h1 { font-size: 64px; line-height: 1.05; letter-spacing: -.02em; }
+  h2 { font-size: 38px; line-height: 1.15; letter-spacing: -.01em; margin-bottom: 22px; }
+  h3 { font-size: 20px; margin-bottom: 10px; }
+  p, li { font-size: 19px; line-height: 1.45; }
+  .chico, .chico p, .chico li { font-size: 16px; }
+  ul.lista { list-style: none; display: grid; gap: 10px; }
+  ul.lista li { padding-left: 26px; position: relative; }
+  ul.lista li::before { content: ""; position: absolute; left: 4px; top: 11px; width: 9px; height: 9px; border-radius: 50%; background: var(--acento); }
+  code { font-family: var(--mono); font-size: .86em; background: var(--acento-suave); color: #183f80; padding: 1px 6px; border-radius: 5px; }
+  strong { color: var(--tinta); }
+
+  /* ---------- Layout ---------- */
+  .fila { display: grid; gap: 26px; flex: 1; min-height: 0; }
+  .dos { grid-template-columns: 1fr 1fr; }
+  .dos-izq { grid-template-columns: 1.05fr 1.35fr; }
+  .tres { grid-template-columns: repeat(3, 1fr); }
+  .cuatro { grid-template-columns: repeat(4, 1fr); }
+  .tarjeta { background: #f7f9fc; border: 1px solid var(--linea); border-radius: 12px; padding: 18px 20px; }
+  .tarjeta h3 { display: flex; align-items: center; gap: 8px; }
+  .borde-acento { border-top: 4px solid var(--acento); }
+  .borde-pato { border-top: 4px solid var(--pato); }
+  .borde-ok { border-top: 4px solid var(--ok); }
+  .borde-violeta { border-top: 4px solid var(--violeta); }
+  .etiqueta { display: inline-block; font: 700 12px var(--mono); padding: 3px 8px; border-radius: 6px; background: var(--acento-suave); color: #183f80; }
+  .etq-ok { background: var(--ok-suave); color: var(--ok); }
+  .etq-pato { background: var(--pato-suave); color: #8a6100; }
+  .etq-violeta { background: var(--violeta-suave); color: var(--violeta); }
+  .etq-mal { background: var(--mal-suave); color: var(--mal); }
+  .ruta { font: 13px var(--mono); color: var(--suave); background: #f1f4f9; border: 1px dashed var(--linea); border-radius: 8px; padding: 7px 10px; overflow-wrap: anywhere; }
+  .ruta b { color: var(--tinta); }
+  .nota { font-size: 15px; color: var(--suave); }
+
+  /* ---------- Tablas ---------- */
+  table { width: 100%; border-collapse: collapse; font-size: 15.5px; }
+  th { text-align: left; font-size: 12.5px; text-transform: uppercase; letter-spacing: .05em; color: var(--suave); padding: 7px 10px; border-bottom: 2px solid var(--linea); }
+  td { padding: 8px 10px; border-bottom: 1px solid var(--linea); vertical-align: top; line-height: 1.35; }
+  td:first-child { white-space: nowrap; }
+
+  /* ---------- Código ---------- */
+  .codigo { background: var(--codigo); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+  .codigo .cab { font: 12.5px var(--mono); color: #9fb0cc; background: rgba(255, 255, 255, .06); padding: 8px 14px; border-bottom: 1px solid rgba(255, 255, 255, .08); overflow-wrap: anywhere; }
+  .codigo pre { margin: 0; padding: 10px 0; font: 13px/1.42 var(--mono); color: #e3e9f3; overflow: hidden; }
+  .codigo .ln { display: block; padding: 0 14px 0 58px; text-indent: -58px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .codigo.compacto pre { font-size: var(--fs, 12.5px); line-height: 1.32; padding: 8px 0; }
+  .codigo .n { display: inline-block; width: 58px; text-indent: 0; text-align: right; padding-right: 14px; color: #5d6e8a; user-select: none; }
+  .codigo .marca { background: rgba(224, 161, 0, .16); box-shadow: inset 3px 0 0 var(--pato); }
+  .tk-kw { color: #c79bff; } .tk-an { color: #ffcf5c; } .tk-st { color: #8ee6a6; } .tk-cm { color: #7083a3; font-style: italic; } .tk-ty { color: #6fc3ff; } .tk-nu { color: #ff9e8f; }
+
+  /* ---------- Portada ---------- */
+  .portada { background: linear-gradient(135deg, #14213d 0%, #1f3f7a 60%, #1f5fbf 100%); color: #fff; justify-content: center; }
+  .portada h1 { color: #fff; }
+  .portada .seccion { color: #ffd766; }
+  .portada p { color: #d4def0; }
+  .pato { font-size: 92px; line-height: 1; margin-bottom: 18px; }
+  .integrantes { margin-top: 34px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .integrantes span { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .2); padding: 7px 14px; border-radius: 999px; font-size: 16px; }
+
+  /* ---------- Agenda ---------- */
+  .agenda { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 40px; }
+  .agenda div { display: flex; align-items: center; gap: 16px; font-size: 22px; padding: 12px 0; border-bottom: 1px solid var(--linea); }
+  .agenda b { font: 700 18px var(--mono); color: var(--acento); width: 34px; }
+
+  /* ---------- Controles ---------- */
+  #controles { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; gap: 8px; align-items: center;
+    background: rgba(20, 33, 61, .9); color: #fff; padding: 6px 10px; border-radius: 999px; font: 13px var(--sans); z-index: 5; opacity: .25; transition: opacity .2s; }
+  #controles:hover { opacity: 1; }
+  #controles button { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, .3); border-radius: 999px; padding: 5px 12px; cursor: pointer; font: inherit; }
+  #progreso { position: fixed; left: 0; top: 0; height: 4px; background: var(--pato); transition: width .25s; z-index: 5; }
+
+  /* ---------- Imprimir / PDF: una diapositiva por hoja ---------- */
+  @page { size: 1280px 720px; margin: 0; }
+  @media print {
+    html, body { overflow: visible; height: auto; background: #fff; }
+    #escenario { position: static; display: block; }
+    #lienzo { transform: none !important; width: 1280px; height: auto; }
+    .slide { display: flex !important; position: relative; width: 1280px; height: 720px; border-radius: 0; box-shadow: none; page-break-after: always; break-after: page; }
+    #controles, #progreso { display: none; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+<div id="progreso"></div>
+<div id="escenario"><div id="lienzo">
+
+<!-- ================================================================ 1. PORTADA -->
+<section class="slide portada">
+  <div class="pato" aria-hidden="true">🦆</div>
+  <div class="seccion">Backend de Aplicaciones · UTN FRC · 3K1 · Grupo 107</div>
+  <h1>Técnica Patito S.R.L.</h1>
+  <p style="font-size:26px; margin-top:14px; max-width:900px;">Backend de microservicios para la gestión de servicios técnicos domiciliarios: de la solicitud del cliente a la visita finalizada, con asignación automática, ventana de 15 minutos y costo calculado.</p>
+  <div class="integrantes">
+    <span>Filsinger, Joaquín</span><span>Estevez, Miguel Angel</span><span>Montarce, Luciana</span><span>Quiroga, Tadeo Fabián</span>
+  </div>
+</section>
+
+<!-- ================================================================ 2. AGENDA -->
+<section class="slide">
+  <div class="seccion">Agenda</div>
+  <h2>¿Qué vamos a ver?</h2>
+  <div class="agenda">
+    <div><b>01</b>Dominio del negocio</div>
+    <div><b>05</b>Patrón Strategy</div>
+    <div><b>02</b>Reglas de negocio (RN-1 a RN-11)</div>
+    <div><b>06</b>Patrón Snapshot</div>
+    <div><b>03</b>Arquitectura</div>
+    <div><b>07</b>Patrón Adapter</div>
+    <div><b>04</b>Tecnologías utilizadas</div>
+    <div><b>08</b>Ciclo de vida de la solicitud</div>
+  </div>
+</section>
+
+<!-- ================================================================ 3. DOMINIO: PROBLEMA -->
+<section class="slide">
+  <div class="seccion">01 · Dominio del negocio</div>
+  <h2>El problema: una operatoria artesanal</h2>
+  <div class="fila dos">
+    <div>
+      <p style="margin-bottom:16px;">Técnica Patito es una empresa de servicios técnicos domiciliarios de Córdoba que gestiona todo con <strong>mensajería, llamadas y planillas</strong>.</p>
+      <ul class="lista">
+        <li><strong>Asignaciones ineficientes:</strong> se envían técnicos sin la certificación necesaria → visitas fallidas.</li>
+        <li><strong>Pérdida de oportunidades:</strong> si el técnico tarda en contestar, el pedido queda sin respuesta.</li>
+        <li><strong>Falta de control:</strong> no hay certeza de que el cliente aprobó el presupuesto.</li>
+        <li><strong>Conflictos de concurrencia:</strong> un pedido asignado a dos técnicos, o un técnico con más trabajo del que puede cumplir.</li>
+      </ul>
+    </div>
+    <div class="tarjeta borde-ok" style="align-self:start;">
+      <h3>✅ Lo que resuelve el sistema</h3>
+      <ul class="lista chico">
+        <li>Busca solo al técnico <strong>disponible</strong>, <strong>certificado</strong> y a <strong>menos de 13 km</strong>.</li>
+        <li>Le oferta el trabajo con una <strong>ventana de 15 minutos</strong>; si no contesta, pasa al siguiente.</li>
+        <li>Exige la <strong>aprobación del presupuesto</strong> antes de empezar.</li>
+        <li>Limita la carga de cada técnico y evita la doble asignación.</li>
+        <li>Calcula el <strong>costo de la visita</strong> y deja todo en un <strong>historial auditable</strong>.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 4. DOMINIO: ACTORES Y PROCESO -->
+<section class="slide">
+  <div class="seccion">01 · Dominio del negocio</div>
+  <h2>Actores y proceso principal</h2>
+  <div class="fila cuatro" style="flex:0 0 auto; margin-bottom:24px;">
+    <div class="tarjeta borde-acento"><h3>👤 Cliente</h3><p class="chico">Pide el servicio, aprueba o rechaza el presupuesto, cancela.</p></div>
+    <div class="tarjeta borde-pato"><h3>🔧 Técnico</h3><p class="chico">Acepta o rechaza ofertas, presupuesta, finaliza, reprograma, deriva.</p></div>
+    <div class="tarjeta borde-violeta"><h3>🛡️ Administrador</h3><p class="chico">Gestiona padrones, ve todo y consulta el informe de gestión.</p></div>
+    <div class="tarjeta borde-ok"><h3>⚙️ Sistema</h3><p class="chico">Busca candidatos, oferta, vence ofertas y calcula costos solo.</p></div>
+  </div>
+  <svg viewBox="0 0 1140 190" style="width:100%; flex:1;" role="img" aria-label="Proceso principal en 6 pasos">
+    <defs><marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#52607a"/></marker></defs>
+    <g font-family="Inter, Segoe UI, sans-serif" text-anchor="middle">
+      <g><rect x="0" y="30" width="165" height="110" rx="12" fill="#e3ecfb" stroke="#1f5fbf" stroke-width="2"/><text x="82" y="68" font-size="15" font-weight="700" fill="#14213d">1. Crear</text><text x="82" y="92" font-size="13" fill="#52607a">El cliente pide</text><text x="82" y="110" font-size="13" fill="#52607a">el arreglo</text></g>
+      <g><rect x="195" y="30" width="165" height="110" rx="12" fill="#e3ecfb" stroke="#1f5fbf" stroke-width="2"/><text x="277" y="68" font-size="15" font-weight="700" fill="#14213d">2. Buscar</text><text x="277" y="92" font-size="13" fill="#52607a">Certificación +</text><text x="277" y="110" font-size="13" fill="#52607a">menos de 13 km</text></g>
+      <g><rect x="390" y="30" width="165" height="110" rx="12" fill="#fff4cc" stroke="#e0a100" stroke-width="2"/><text x="472" y="68" font-size="15" font-weight="700" fill="#14213d">3. Ofertar</text><text x="472" y="92" font-size="13" fill="#52607a">Al más cercano,</text><text x="472" y="110" font-size="13" fill="#52607a">15 minutos</text></g>
+      <g><rect x="585" y="30" width="165" height="110" rx="12" fill="#fff4cc" stroke="#e0a100" stroke-width="2"/><text x="667" y="68" font-size="15" font-weight="700" fill="#14213d">4. Aceptar</text><text x="667" y="92" font-size="13" fill="#52607a">Se calcula el</text><text x="667" y="110" font-size="13" fill="#52607a">costo de visita</text></g>
+      <g><rect x="780" y="30" width="165" height="110" rx="12" fill="#ede5fb" stroke="#6b3fc0" stroke-width="2"/><text x="862" y="68" font-size="15" font-weight="700" fill="#14213d">5. Presupuesto</text><text x="862" y="92" font-size="13" fill="#52607a">El técnico lo carga,</text><text x="862" y="110" font-size="13" fill="#52607a">el cliente aprueba</text></g>
+      <g><rect x="975" y="30" width="165" height="110" rx="12" fill="#ddf3e6" stroke="#1f8a52" stroke-width="2"/><text x="1057" y="68" font-size="15" font-weight="700" fill="#14213d">6. Finalizar</text><text x="1057" y="92" font-size="13" fill="#52607a">Todo queda en</text><text x="1057" y="110" font-size="13" fill="#52607a">el historial</text></g>
+      <g stroke="#52607a" stroke-width="2" marker-end="url(#fl)"><line x1="167" y1="85" x2="192" y2="85"/><line x1="362" y1="85" x2="387" y2="85"/><line x1="557" y1="85" x2="582" y2="85"/><line x1="752" y1="85" x2="777" y2="85"/><line x1="947" y1="85" x2="972" y2="85"/></g>
+      <path d="M 472 142 C 472 182, 277 182, 277 145" fill="none" stroke="#b3373b" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#fl)"/>
+      <text x="375" y="183" font-size="13" fill="#b3373b" font-weight="600">rechaza o vence → siguiente candidato</text>
+    </g>
+  </svg>
+</section>
+
+<!-- ================================================================ 5. DOMINIO: MODELO -->
+<section class="slide">
+  <div class="seccion">01 · Dominio del negocio</div>
+  <h2>Modelo de dominio: una base por microservicio</h2>
+  <div class="fila tres">
+    <div class="tarjeta borde-acento">
+      <h3>ms-clientes</h3>
+      <p class="chico" style="margin-bottom:10px;"><code>Cliente</code>: nombre, apellido, <strong>DNI único</strong>, calle, barrio, <strong>latitud y longitud</strong>.</p>
+      <p class="nota">Datos de prueba: Carlos García (Centro), María Rodríguez (Nueva Córdoba), Lucía Fernández (Cerro de las Rosas).</p>
+    </div>
+    <div class="tarjeta borde-pato">
+      <h3>ms-tecnicos</h3>
+      <p class="chico" style="margin-bottom:10px;"><code>Tecnico</code> (legajo y DNI únicos, base, <strong>disponible</strong>), <code>Certificacion</code>, <code>ZonaCobertura</code> y las tablas intermedias <code>TecnicoCertificacion</code> / <code>TecnicoZona</code>.</p>
+      <p class="nota">Juan Pérez (Redes, Impresoras) · Ana Gómez (Impresoras, Notebooks Apple) · Lejano López (Redes, a 29,4 km).</p>
+    </div>
+    <div class="tarjeta borde-violeta">
+      <h3>ms-solicitudes</h3>
+      <p class="chico" style="margin-bottom:10px;"><code>Solicitud</code> (snapshot de cliente y técnico, estado, modo, oferta, costo, presupuesto, <code>@Version</code>), <code>HistorialEstado</code>, tipos de servicio y técnicos descartados.</p>
+      <p class="nota">Los otros servicios se referencian <strong>por id</strong>: no hay claves foráneas entre bases.</p>
+    </div>
+  </div>
+  <p class="nota" style="margin-top:18px;">Tipos de servicio: <code>REPARACION</code> · <code>INSTALACION</code> · <code>MANTENIMIENTO</code> &nbsp;|&nbsp; Prioridad: <code>NORMAL</code> · <code>URGENTE</code> &nbsp;|&nbsp; Modo de asignación: <code>AUTOMATICA</code> (por defecto) · <code>MANUAL</code></p>
+</section>
+
+<!-- ================================================================ 6. REGLAS 1/2 -->
+<section class="slide">
+  <div class="seccion">02 · Reglas de negocio</div>
+  <h2>Reglas de negocio (1/2)</h2>
+  <table>
+    <thead><tr><th>Regla</th><th>Qué exige</th><th>Cómo se aplica</th><th>Si no se cumple</th></tr></thead>
+    <tbody>
+      <tr><td><span class="etiqueta">RN-1</span> Datos obligatorios</td><td>Marca, modelo, descripción y al menos un tipo de servicio</td><td>Bean Validation en <code>SolicitudRequest</code> (<code>@NotEmpty</code>, <code>@NotBlank</code>)</td><td><span class="etiqueta etq-mal">400</span></td></tr>
+      <tr><td><span class="etiqueta">RN-2</span> Candidatura</td><td>Técnico disponible, con la certificación y que cubra la zona</td><td>Consulta JPQL en ms-tecnicos; sin candidatos → espera + alerta al admin</td><td><span class="etiqueta etq-mal">422</span> al ofertar a un no candidato</td></tr>
+      <tr><td><span class="etiqueta">RN-3</span> Ventana de 15 min</td><td>Si rechaza o vence, vuelve a PENDIENTE y se busca otro</td><td><code>ofertaExpira</code> + <code>OfertaScheduler</code> (<code>@Scheduled</code> cada 30 s)</td><td><span class="etiqueta etq-mal">422</span> si acepta tarde</td></tr>
+      <tr><td><span class="etiqueta">RN-4</span> Un técnico por solicitud</td><td>Solo el técnico ofertado responde; sin doble asignación</td><td>Validación del técnico + bloqueo optimista <code>@Version</code></td><td><span class="etiqueta etq-mal">422</span></td></tr>
+      <tr><td><span class="etiqueta">RN-5</span> Límite por técnico</td><td>Máx. 2 en espera y 1 en curso</td><td><code>EN_ESPERA</code> + conteos en el repositorio</td><td><span class="etiqueta etq-mal">422</span></td></tr>
+      <tr><td><span class="etiqueta">RN-6</span> Presupuesto</td><td>Solo se ejecuta si el cliente lo aprueba</td><td>Exige ASIGNADA y presupuesto cargado</td><td><span class="etiqueta etq-mal">422</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ================================================================ 7. REGLAS 2/2 -->
+<section class="slide">
+  <div class="seccion">02 · Reglas de negocio</div>
+  <h2>Reglas de negocio (2/2)</h2>
+  <table>
+    <thead><tr><th>Regla</th><th>Qué exige</th><th>Cómo se aplica</th></tr></thead>
+    <tbody>
+      <tr><td><span class="etiqueta">RN-7</span> Estados e historial</td><td>Un solo estado a la vez, sin saltos inválidos, con historial de fecha y hora</td><td>Mapa de transiciones en <code>EstadoSolicitud</code> + <code>HistorialEstado</code> con el usuario del token (o <code>sistema</code>)</td></tr>
+      <tr><td><span class="etiqueta">RN-8</span> Costo de visita</td><td>Monto fijo + adicional por km; si la API de mapas falla, distancia local</td><td>OSRM con respaldo Haversine → <strong>patrón Adapter</strong></td></tr>
+      <tr><td><span class="etiqueta">RN-9</span> Cercanía</td><td>Radio máximo de 13 km</td><td>Haversine en <code>TecnicoService.buscarCandidatos()</code> (<code>app.candidatos.radio-km</code>)</td></tr>
+      <tr><td><span class="etiqueta etq-violeta">RN-10</span> Snapshot <em>(equipo)</em></td><td>La solicitud conserva los datos del cliente y del técnico del momento</td><td>Copia en <code>Solicitud</code> → <strong>patrón Snapshot</strong></td></tr>
+      <tr><td><span class="etiqueta etq-violeta">RN-11</span> Estrategias de costo <em>(equipo)</em></td><td>Recargo según prioridad y horario</td><td>4 estrategias → <strong>patrón Strategy</strong></td></tr>
+    </tbody>
+  </table>
+  <div class="tarjeta" style="margin-top:22px;">
+    <p class="chico"><strong>Todas las violaciones de reglas</strong> se responden con el mismo formato estándar, <code>ProblemDetail</code> (RFC 7807): <code>title</code>, <code>status</code>, <code>detail</code>, <code>instance</code> y el <code>correlationId</code> para rastrear el pedido en los logs.</p>
+  </div>
+</section>
+
+<!-- ================================================================ 8. ARQUITECTURA DIAGRAMA -->
+<section class="slide">
+  <div class="seccion">03 · Arquitectura</div>
+  <h2>Arquitectura de microservicios</h2>
+  <svg viewBox="0 0 1140 500" style="width:100%; flex:1;" role="img" aria-label="Diagrama de arquitectura del README">
+    <defs>
+      <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#52607a"/></marker>
+      <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f5fbf"/></marker>
+    </defs>
+    <g font-family="Inter, Segoe UI, sans-serif" text-anchor="middle">
+      <!-- Usuarios y frontend -->
+      <rect x="0" y="40" width="215" height="80" rx="12" fill="#f7f9fc" stroke="#52607a" stroke-width="2"/>
+      <text x="107" y="74" font-size="15" font-weight="700" fill="#14213d">Cliente / Técnico / Admin</text>
+      <text x="107" y="96" font-size="13" fill="#52607a">Postman o Swagger</text>
+      <rect x="0" y="370" width="215" height="80" rx="12" fill="#e3ecfb" stroke="#1f5fbf" stroke-width="2"/>
+      <text x="107" y="404" font-size="15" font-weight="700" fill="#14213d">Frontend :47300</text>
+      <text x="107" y="426" font-size="13" fill="#52607a">nginx · keycloak-js</text>
+      <!-- Keycloak y Gateway -->
+      <rect x="315" y="40" width="225" height="80" rx="12" fill="#fff4cc" stroke="#e0a100" stroke-width="2"/>
+      <text x="427" y="74" font-size="15" font-weight="700" fill="#14213d">Keycloak :47390</text>
+      <text x="427" y="96" font-size="13" fill="#52607a">realm patito · emite JWT</text>
+      <rect x="315" y="215" width="225" height="100" rx="12" fill="#ede5fb" stroke="#6b3fc0" stroke-width="2.5"/>
+      <text x="427" y="252" font-size="16" font-weight="700" fill="#14213d">API Gateway :47380</text>
+      <text x="427" y="275" font-size="13" fill="#52607a">valida JWT · 401</text>
+      <text x="427" y="295" font-size="13" fill="#52607a">rutas · correlation id</text>
+      <!-- Microservicios -->
+      <rect x="640" y="35" width="225" height="80" rx="12" fill="#f7f9fc" stroke="#1f5fbf" stroke-width="2"/>
+      <text x="752" y="69" font-size="15" font-weight="700" fill="#14213d">ms-clientes :47383</text>
+      <text x="752" y="91" font-size="13" fill="#52607a">padrón de clientes</text>
+      <rect x="640" y="205" width="225" height="110" rx="12" fill="#f7f9fc" stroke="#1f5fbf" stroke-width="2.5"/>
+      <text x="752" y="242" font-size="15" font-weight="700" fill="#14213d">ms-solicitudes :47381</text>
+      <text x="752" y="264" font-size="13" fill="#52607a">ciclo de vida · scheduler</text>
+      <text x="752" y="284" font-size="13" fill="#52607a">costos (Strategy)</text>
+      <rect x="640" y="400" width="225" height="90" rx="12" fill="#f7f9fc" stroke="#1f5fbf" stroke-width="2"/>
+      <text x="752" y="436" font-size="15" font-weight="700" fill="#14213d">ms-tecnicos :47382</text>
+      <text x="752" y="458" font-size="13" fill="#52607a">candidatos · Haversine</text>
+      <!-- Bases y OSRM -->
+      <g fill="#ddf3e6" stroke="#1f8a52" stroke-width="2">
+        <path d="M955 50 v40 a45 10 0 0 0 90 0 v-40"/><ellipse cx="1000" cy="50" rx="45" ry="10"/>
+        <path d="M955 205 v40 a45 10 0 0 0 90 0 v-40"/><ellipse cx="1000" cy="205" rx="45" ry="10"/>
+        <path d="M955 415 v40 a45 10 0 0 0 90 0 v-40"/><ellipse cx="1000" cy="415" rx="45" ry="10"/>
+      </g>
+      <text x="1000" y="82" font-size="13" font-weight="700" fill="#14213d">H2 clientes</text>
+      <text x="1000" y="237" font-size="13" font-weight="700" fill="#14213d">H2 solicitudes</text>
+      <text x="1000" y="447" font-size="13" fill="#14213d" font-weight="700">H2 técnicos</text>
+      <rect x="935" y="290" width="130" height="58" rx="29" fill="#fbe2e2" stroke="#b3373b" stroke-width="2" stroke-dasharray="6 4"/>
+      <text x="1000" y="315" font-size="14" font-weight="700" fill="#14213d">OSRM</text>
+      <text x="1000" y="334" font-size="12" fill="#52607a">API de mapas</text>
+      <!-- Flechas -->
+      <g stroke="#52607a" stroke-width="2" fill="none" marker-end="url(#a1)">
+        <line x1="215" y1="80" x2="312" y2="80"/>
+        <line x1="190" y1="120" x2="330" y2="212"/>
+        <path d="M 120 370 C 120 300, 270 170, 360 123"/>
+        <line x1="215" y1="410" x2="345" y2="317"/>
+      </g>
+      <text x="262" y="70" font-size="12" fill="#52607a">1. pide token</text>
+      <text x="230" y="178" font-size="12" fill="#52607a">2. Bearer token</text>
+      <text x="200" y="265" font-size="12" fill="#52607a">login PKCE</text>
+      <text x="300" y="385" font-size="12" fill="#52607a">/api (proxy)</text>
+      <g stroke="#1f5fbf" stroke-width="2" fill="none" marker-end="url(#a2)">
+        <line x1="540" y1="245" x2="637" y2="85"/>
+        <line x1="540" y1="265" x2="637" y2="262"/>
+        <line x1="540" y1="290" x2="637" y2="440"/>
+      </g>
+      <g stroke="#6b3fc0" stroke-width="2" fill="none" marker-end="url(#a1)">
+        <line x1="752" y1="205" x2="752" y2="118"/>
+        <line x1="752" y1="315" x2="752" y2="397"/>
+      </g>
+      <text x="830" y="168" font-size="12" fill="#6b3fc0">REST + token</text>
+      <text x="830" y="360" font-size="12" fill="#6b3fc0">REST + token</text>
+      <g stroke="#1f8a52" stroke-width="2"><line x1="865" y1="75" x2="955" y2="72"/><line x1="865" y1="230" x2="955" y2="228"/><line x1="865" y1="445" x2="955" y2="438"/></g>
+      <line x1="865" y1="292" x2="932" y2="315" stroke="#b3373b" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#a1)"/>
+      <text x="898" y="290" font-size="11" fill="#b3373b">commons-geo</text>
+    </g>
+  </svg>
+</section>
+
+<!-- ================================================================ 9. ARQUITECTURA: MÓDULOS Y SEGURIDAD -->
+<section class="slide">
+  <div class="seccion">03 · Arquitectura</div>
+  <h2>Módulos, seguridad y comunicación</h2>
+  <div class="fila dos-izq">
+    <table>
+      <thead><tr><th>Módulo</th><th>Puerto</th><th>Responsabilidad</th></tr></thead>
+      <tbody>
+        <tr><td><code>api-gateway</code></td><td>47380</td><td>Único punto de entrada: valida el JWT, rutea, genera el <code>X-Correlation-ID</code>, Swagger unificado</td></tr>
+        <tr><td><code>ms-solicitudes</code></td><td>47381</td><td>Ciclo de vida, estados, ventana de 15 min, RN-5, costos</td></tr>
+        <tr><td><code>ms-tecnicos</code></td><td>47382</td><td>Técnicos, certificaciones, zonas, candidatos (&lt; 13 km)</td></tr>
+        <tr><td><code>ms-clientes</code></td><td>47383</td><td>Clientes con domicilio y coordenadas</td></tr>
+        <tr><td><code>commons-geo</code></td><td>—</td><td>Librería: Haversine + cliente OSRM</td></tr>
+        <tr><td>Keycloak</td><td>47390</td><td>Emite los tokens JWT (realm <code>patito</code>)</td></tr>
+        <tr><td><code>frontend</code></td><td>47300</td><td>Página web (nginx), reenvía <code>/api</code> al gateway</td></tr>
+      </tbody>
+    </table>
+    <div style="display:grid; gap:14px; align-content:start;">
+      <div class="tarjeta borde-violeta">
+        <h3>🔐 Seguridad en dos niveles</h3>
+        <p class="chico"><strong>Gateway:</strong> sin token válido → <span class="etiqueta etq-mal">401</span><br><strong>Microservicio:</strong> revalida el token y <code>@PreAuthorize</code> decide el rol → <span class="etiqueta etq-mal">403</span></p>
+      </div>
+      <div class="tarjeta borde-acento">
+        <h3>🔁 Comunicación</h3>
+        <p class="chico"><code>RestClient</code> con timeouts; propaga el <strong>token del usuario</strong> (o el de la cuenta de servicio <code>SISTEMA</code> en el scheduler) y el <code>X-Correlation-ID</code>.</p>
+      </div>
+      <div class="tarjeta borde-ok">
+        <h3>🛟 Resiliencia</h3>
+        <p class="chico">Resilience4j: <strong>Retry</strong> + <strong>Circuit Breaker</strong>. Servicio caído → <span class="etiqueta etq-mal">503</span> sin guardar datos a medias.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 10. TECNOLOGÍAS -->
+<section class="slide">
+  <div class="seccion">04 · Tecnologías utilizadas</div>
+  <h2>Stack tecnológico</h2>
+  <div class="fila tres" style="grid-auto-rows:min-content; align-content:start;">
+    <div class="tarjeta borde-acento"><span class="etiqueta">Lenguaje y build</span><p class="chico" style="margin-top:8px;"><strong>Java 21</strong> (Temurin) · <strong>Maven 3.9</strong> multi-módulo · Lombok</p></div>
+    <div class="tarjeta borde-acento"><span class="etiqueta">Backend</span><p class="chico" style="margin-top:8px;"><strong>Spring Boot 3.5.0</strong> · Web MVC + Tomcat · Spring Data JPA + <strong>Hibernate 6.6</strong> · Bean Validation</p></div>
+    <div class="tarjeta borde-violeta"><span class="etiqueta etq-violeta">API Gateway</span><p class="chico" style="margin-top:8px;"><strong>Spring Cloud Gateway 4.3</strong> (Cloud 2025.0.0) · WebFlux + Netty</p></div>
+    <div class="tarjeta borde-pato"><span class="etiqueta etq-pato">Seguridad</span><p class="chico" style="margin-top:8px;"><strong>Keycloak 26</strong> (OIDC, OAuth 2.0, JWT) · <strong>Spring Security 6.5</strong> Resource Server + OAuth2 Client</p></div>
+    <div class="tarjeta borde-ok"><span class="etiqueta etq-ok">Comunicación y resiliencia</span><p class="chico" style="margin-top:8px;"><strong>RestClient</strong> · <strong>Resilience4j 2.2</strong> · OSRM + Haversine</p></div>
+    <div class="tarjeta borde-ok"><span class="etiqueta etq-ok">Datos</span><p class="chico" style="margin-top:8px;"><strong>H2 2.3</strong> en archivo, una base por microservicio</p></div>
+    <div class="tarjeta borde-acento"><span class="etiqueta">Documentación</span><p class="chico" style="margin-top:8px;"><strong>springdoc-openapi 2.8.9</strong> · Swagger UI (OpenAPI 3)</p></div>
+    <div class="tarjeta borde-acento"><span class="etiqueta">Logs y monitoreo</span><p class="chico" style="margin-top:8px;">SLF4J + Logback · MDC (correlation id) · Actuator · Micrometer</p></div>
+    <div class="tarjeta borde-violeta"><span class="etiqueta etq-violeta">Infraestructura</span><p class="chico" style="margin-top:8px;"><strong>Docker</strong> + <strong>Docker Compose</strong> · nginx 1.27</p></div>
+    <div class="tarjeta borde-pato"><span class="etiqueta etq-pato">Frontend</span><p class="chico" style="margin-top:8px;">HTML + CSS + JavaScript sin framework · keycloak-js (PKCE)</p></div>
+    <div class="tarjeta borde-ok"><span class="etiqueta etq-ok">Pruebas</span><p class="chico" style="margin-top:8px;"><strong>Postman</strong> + Newman: 83 peticiones con tests</p></div>
+    <div class="tarjeta" style="border-style:dashed;"><span class="etiqueta etq-mal">Detalle</span><p class="chico" style="margin-top:8px;">Versiones y motivos en <code>docs/TECNOLOGIAS.md</code></p></div>
+  </div>
+</section>
+
+<!-- ================================================================ 11. STRATEGY: IDEA -->
+<section class="slide">
+  <div class="seccion">05 · Patrón Strategy (GoF, comportamiento)</div>
+  <h2>Strategy: cuatro formas de cobrar la visita</h2>
+  <div class="fila dos">
+    <div>
+      <p style="margin-bottom:14px;"><strong>Problema:</strong> el costo cambia según la <strong>prioridad</strong> y el <strong>horario</strong>. Con <code>if/else</code> el método crece con cada tarifa nueva.</p>
+      <p style="margin-bottom:16px;"><strong>Solución:</strong> una interfaz <code>EstrategiaCosto</code> y una clase por tarifa. <code>CalculadoraCosto</code> recibe <strong>todas</strong> por inyección y usa la que <code>aplica()</code>.</p>
+      <table>
+        <thead><tr><th>Estrategia</th><th>Cuándo</th><th>Recargo</th></tr></thead>
+        <tbody>
+          <tr><td><code>ESTANDAR</code></td><td>Normal, horario hábil</td><td>0 %</td></tr>
+          <tr><td><code>PRIORIDAD</code></td><td>Urgente, horario hábil</td><td>+30 %</td></tr>
+          <tr><td><code>FUERA_HORARIO</code></td><td>Normal, fin de semana / feriado / fuera de 8–18</td><td>+50 %</td></tr>
+          <tr><td><code>COMBINADA</code></td><td>Urgente y fuera de horario</td><td>+80 %</td></tr>
+        </tbody>
+      </table>
+      <p class="nota" style="margin-top:10px;">Base = $5000 + km × $800 · ej.: Juan a 0,58 km → $5464,00 (ESTANDAR)</p>
+    </div>
+    <div style="display:grid; gap:10px; align-content:start;">
+      <h3>📁 Dónde está aplicado</h3>
+      <div class="ruta"><b>Interfaz</b> · ms-solicitudes/src/main/java/utnfc/isi/back/tpi/solicitudes/services/costos/<b>EstrategiaCosto.java</b></div>
+      <div class="ruta"><b>Contexto</b> · …/solicitudes/services/costos/<b>CalculadoraCosto.java</b></div>
+      <div class="ruta"><b>Estrategias</b> · …/services/costos/<b>EstrategiaEstandar.java</b> · <b>EstrategiaPrioridad.java</b> · <b>EstrategiaFueraHorario.java</b> · <b>EstrategiaCombinada.java</b></div>
+      <div class="ruta"><b>Datos</b> · …/services/costos/<b>ContextoCosto.java</b> · <b>DetalleCosto.java</b> · <b>Tarifas.java</b></div>
+      <div class="ruta"><b>Uso</b> · …/solicitudes/services/<b>SolicitudService.java</b> → <code>aceptar()</code> y <code>elegir()</code></div>
+      <div class="tarjeta borde-ok" style="margin-top:6px;"><p class="chico"><strong>Abierto/cerrado:</strong> una tarifa nueva = una clase <code>@Component</code> nueva. <code>CalculadoraCosto</code> no se toca.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 12. STRATEGY: CÓDIGO (interfaz) -->
+<section class="slide">
+  <div class="seccion">05 · Patrón Strategy · código</div>
+  <h2>La interfaz y una de las cuatro estrategias</h2>
+  <div class="fila dos">
+    <div style="display:grid; gap:12px; align-content:start;">
+      <div class="codigo compacto">
+        <div class="cab">ms-solicitudes/src/main/java/utnfc/isi/back/tpi/solicitudes/services/costos/EstrategiaCosto.java</div>
+        <pre data-inicio="11" data-marca="17,20,22" data-omitir="13,19">public interface EstrategiaCosto {
+
+    String nombre();
+
+    /** Indica si esta estrategia corresponde para el contexto dado. */
+    boolean aplica(ContextoCosto contexto);
+
+    BigDecimal porcentajeRecargo(Tarifas tarifas);
+
+    default DetalleCosto calcular(ContextoCosto contexto, Tarifas tarifas) {
+        BigDecimal base = tarifas.montoFijo()
+                .add(tarifas.porKm().multiply(BigDecimal.valueOf(contexto.distanciaKm())))
+                .setScale(2, RoundingMode.HALF_UP);
+        BigDecimal recargo = base.multiply(porcentajeRecargo(tarifas)).setScale(2, RoundingMode.HALF_UP);
+        return new DetalleCosto(nombre(), base, recargo, base.add(recargo));
+    }
+}</pre>
+      </div>
+    </div>
+    <div style="display:grid; gap:14px; align-content:start;">
+      <div class="codigo compacto">
+        <div class="cab">ms-solicitudes/…/solicitudes/services/costos/EstrategiaPrioridad.java</div>
+        <pre data-inicio="8" data-marca="17,18" data-omitir="10-15,20-24">@Component
+public class EstrategiaPrioridad implements EstrategiaCosto {
+    // ... nombre() devuelve "PRIORIDAD"
+    @Override
+    public boolean aplica(ContextoCosto contexto) {
+        return contexto.urgente() &amp;&amp; !contexto.fueraDeHorario();
+    }
+    // ... porcentajeRecargo() devuelve tarifas.recargoPrioridad() (+30 %)
+}</pre>
+      </div>
+      <ul class="lista chico">
+        <li><strong>EstrategiaCosto L14–20:</strong> lo que cada estrategia debe decir: su nombre, si <code>aplica()</code> y su porcentaje de recargo.</li>
+        <li><strong>EstrategiaCosto L22–28:</strong> el método <code>default</code> fija el cálculo común (base + recargo con <code>BigDecimal</code>): <em>Template Method</em>.</li>
+        <li><strong>EstrategiaPrioridad L17–18:</strong> aplica solo si es urgente y en horario hábil.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 12b. STRATEGY: CÓDIGO (calculadora) -->
+<section class="slide">
+  <div class="seccion">05 · Patrón Strategy · código</div>
+  <h2>Quién elige la estrategia: CalculadoraCosto</h2>
+  <div class="fila" style="grid-template-columns: 1.6fr 1fr;">
+    <div style="align-self:start;"><div class="codigo">
+        <div class="cab">…/services/costos/CalculadoraCosto.java</div>
+        <pre data-inicio="21" data-marca="21,29,30,31,33">public CalculadoraCosto(List&lt;EstrategiaCosto&gt; estrategias, Tarifas tarifas) {
+    this.estrategias = estrategias;
+    this.tarifas = tarifas;
+}
+
+public DetalleCosto calcular(double distanciaKm, Prioridad prioridad, LocalDateTime fechaHora, boolean esFeriado) {
+    ContextoCosto contexto = new ContextoCosto(distanciaKm, prioridad == Prioridad.URGENTE,
+            esFueraDeHorario(fechaHora, esFeriado));
+    EstrategiaCosto estrategia = estrategias.stream()
+            .filter(e -&gt; e.aplica(contexto))
+            .findFirst()
+            .orElseThrow(() -&gt; new IllegalStateException("No hay estrategia de costo para " + contexto));
+    return estrategia.calcular(contexto, tarifas);
+}</pre>
+      </div></div>
+    <div style="display:grid; gap:14px; align-content:start;">
+      <ul class="lista chico">
+        <li><strong>L21:</strong> pide una <code>List&lt;EstrategiaCosto&gt;</code>: Spring inyecta <strong>las 4</strong> implementaciones (<code>@Component</code>).</li>
+        <li><strong>L27–28:</strong> arma el contexto: km, ¿es urgente?, ¿es fuera de horario?</li>
+        <li><strong>L29–31:</strong> elige la única que <code>aplica()</code>; las 4 condiciones son excluyentes.</li>
+        <li><strong>L33:</strong> delega el cálculo en la estrategia elegida.</li>
+      </ul>
+      <div class="tarjeta borde-ok"><p class="chico">Para agregar una tarifa nueva <strong>no se modifica</strong> esta clase: se crea otra estrategia (principio abierto/cerrado).</p></div>
+      <p class="nota">Ruta: ms-solicitudes/src/main/java/utnfc/isi/back/tpi/solicitudes/services/costos/CalculadoraCosto.java</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 13. SNAPSHOT: IDEA -->
+<section class="slide">
+  <div class="seccion">06 · Patrón Snapshot (microservicios / datos)</div>
+  <h2>Snapshot: una "foto" de los datos del momento</h2>
+  <div class="fila dos">
+    <div>
+      <p style="margin-bottom:14px;"><strong>Problema:</strong> el cliente y el técnico viven en <strong>otras bases</strong> (otros microservicios). No hay claves foráneas ni JOIN posibles, y sus datos pueden cambiar después.</p>
+      <p style="margin-bottom:16px;"><strong>Solución:</strong> al crear la solicitud se <strong>copian</strong> nombre, domicilio y coordenadas del cliente; al ofertar, el nombre del técnico.</p>
+      <ul class="lista">
+        <li>Si Carlos se muda, la solicitud de hoy conserva <strong>el domicilio al que había que ir</strong>.</li>
+        <li>Listar solicitudes y el informe <strong>no llaman</strong> a otros servicios.</li>
+        <li>Si ms-clientes está caído al crear → <span class="etiqueta etq-mal">503</span> y no se guarda nada.</li>
+      </ul>
+      <p class="nota" style="margin-top:14px;">Se demuestra en Postman: carpeta <strong>03 · Snapshot</strong> (el cliente se muda y la solicitud no cambia).</p>
+    </div>
+    <div style="display:grid; gap:10px; align-content:start;">
+      <h3>📁 Dónde está aplicado</h3>
+      <div class="ruta"><b>Entidad</b> · ms-solicitudes/src/main/java/utnfc/isi/back/tpi/solicitudes/models/<b>Solicitud.java</b> · líneas 50–60 (cliente) y 103–106 (técnico)</div>
+      <div class="ruta"><b>Copia del cliente</b> · …/solicitudes/services/<b>SolicitudService.java</b> → <code>crear()</code>, líneas 122–143</div>
+      <div class="ruta"><b>Copia del técnico</b> · …/services/<b>SolicitudService.java</b> → <code>ofertar()</code> línea 204 · <code>ofertarAutomaticamente()</code> línea 411</div>
+      <div class="ruta"><b>Origen de los datos</b> · …/solicitudes/clients/<b>ClientesClient.java</b> → <code>GET /api/v1/clientes/{id}</code></div>
+      <div class="codigo" style="margin-top:6px;">
+        <div class="cab">…/models/Solicitud.java</div>
+        <pre data-inicio="50" data-marca="52,54,56,58,60">// --- Snapshot del cliente ---
+@Column(nullable = false)
+private Long clienteId;
+@Column(nullable = false, length = 170)
+private String clienteNombre;
+@Column(nullable = false, length = 210)
+private String domicilio;
+@Column(nullable = false)
+private Double latitud;
+@Column(nullable = false)
+private Double longitud;</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 14. SNAPSHOT: CÓDIGO -->
+<section class="slide">
+  <div class="seccion">06 · Patrón Snapshot · código</div>
+  <h2>La copia se hace al crear la solicitud</h2>
+  <div class="fila dos-izq">
+    <div style="display:grid; gap:14px; align-content:start;">
+      <ul class="lista chico">
+        <li><strong>L123:</strong> pide el cliente a ms-clientes (con reintento y circuit breaker). Si no existe → 404; si el servicio está caído → 503.</li>
+        <li><strong>L126–131:</strong> la <strong>foto</strong>: id, nombre completo, domicilio (calle + barrio) y coordenadas quedan guardados en la propia solicitud.</li>
+        <li><strong>L144:</strong> se guarda; desde acá la solicitud no depende de ms-clientes.</li>
+        <li><strong>L148–149:</strong> en modo automático se oferta al técnico más cercano, que también se copia (<code>tecnicoNombre</code>).</li>
+      </ul>
+      <div class="tarjeta borde-pato"><p class="chico">La solicitud guarda <code>clienteId</code> <strong>como número</strong>, no como relación JPA: cada microservicio es dueño de su base (<em>Database per Service</em>).</p></div>
+    </div>
+    <div class="codigo compacto" style="align-self:start;">
+      <div class="cab">ms-solicitudes/src/main/java/utnfc/isi/back/tpi/solicitudes/services/SolicitudService.java → crear()</div>
+      <pre data-inicio="121" data-marca="123,126,127,128,129,130,131,144" data-omitir="132-140,146-147">@Transactional
+public SolicitudResponse crear(SolicitudRequest request) {
+    ClienteDto cliente = clientesClient.obtener(request.clienteId());
+
+    Solicitud solicitud = Solicitud.builder()
+            .clienteId(cliente.id())
+            .clienteNombre(cliente.nombre() + " " + cliente.apellido())
+            .domicilio(cliente.barrio() == null || cliente.barrio().isBlank()
+                    ? cliente.calle() : cliente.calle() + ", " + cliente.barrio())
+            .latitud(cliente.latitud())
+            .longitud(cliente.longitud())
+            // ... tipos de servicio, marca, modelo, descripción, especialidad, prioridad, fecha, feriado, modo
+            .estado(PENDIENTE)
+            .fechaCreacion(LocalDateTime.now())
+            .build();
+    solicitudRepository.save(solicitud);
+    registrarHistorial(solicitud, null, PENDIENTE, "Solicitud creada para el cliente " + solicitud.getClienteNombre());
+    // ... log.info(...)
+    if (solicitud.esAutomatica()) {
+        ofertarAutomaticamente(solicitud);
+    }
+    return SolicitudResponse.desde(solicitud);
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 15. ADAPTER: IDEA -->
+<section class="slide">
+  <div class="seccion">07 · Patrón Adapter (GoF, estructural)</div>
+  <h2>Adapter: la API de mapas habla nuestro idioma</h2>
+  <div class="fila dos">
+    <div>
+      <p style="margin-bottom:14px;"><strong>Problema:</strong> OSRM pide las coordenadas como <code>lon,lat;lon,lat</code> en una URL y responde metros y segundos dentro de un JSON propio. El negocio solo quiere <strong>km, minutos y de dónde salió el dato</strong>.</p>
+      <p style="margin-bottom:12px;"><strong>Solución:</strong> el negocio depende de la interfaz <code>GeoService</code>. <code>OsrmGeoService</code> <strong>adapta</strong> OSRM a esa interfaz y, si OSRM falla, usa Haversine (RN-8).</p>
+      <svg viewBox="0 0 560 175" style="width:100%;" role="img" aria-label="Adapter entre SolicitudService y OSRM">
+        <defs><marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#52607a"/></marker></defs>
+        <g font-family="Inter, Segoe UI, sans-serif" text-anchor="middle">
+          <rect x="0" y="55" width="150" height="64" rx="10" fill="#f7f9fc" stroke="#1f5fbf" stroke-width="2"/>
+          <text x="75" y="83" font-size="13" font-weight="700" fill="#14213d">SolicitudService</text><text x="75" y="102" font-size="11.5" fill="#52607a">aceptar()</text>
+          <rect x="195" y="10" width="170" height="54" rx="10" fill="#e3ecfb" stroke="#1f5fbf" stroke-width="2" stroke-dasharray="5 4"/>
+          <text x="280" y="34" font-size="13" font-weight="700" fill="#14213d">«interface»</text><text x="280" y="52" font-size="13" font-weight="700" fill="#14213d">GeoService</text>
+          <rect x="195" y="106" width="170" height="58" rx="10" fill="#fff4cc" stroke="#e0a100" stroke-width="2.5"/>
+          <text x="280" y="131" font-size="13" font-weight="700" fill="#14213d">OsrmGeoService</text><text x="280" y="150" font-size="11.5" fill="#52607a">el adaptador</text>
+          <rect x="410" y="106" width="150" height="58" rx="10" fill="#fbe2e2" stroke="#b3373b" stroke-width="2"/>
+          <text x="485" y="131" font-size="13" font-weight="700" fill="#14213d">API OSRM</text><text x="485" y="150" font-size="11.5" fill="#52607a">JSON propio</text>
+          <g stroke="#52607a" stroke-width="2" fill="none" marker-end="url(#a3)">
+            <line x1="150" y1="75" x2="192" y2="45"/><line x1="365" y1="135" x2="407" y2="135"/>
+          </g>
+          <line x1="280" y1="106" x2="280" y2="67" stroke="#1f5fbf" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#a3)"/>
+          <text x="315" y="91" font-size="11" fill="#1f5fbf">implements</text>
+        </g>
+      </svg>
+    </div>
+    <div style="display:grid; gap:10px; align-content:start;">
+      <h3>📁 Dónde está aplicado</h3>
+      <div class="ruta"><b>Interfaz (target)</b> · commons-geo/src/main/java/utnfc/isi/back/tpi/geo/<b>GeoService.java</b> · línea 4</div>
+      <div class="ruta"><b>Adaptador</b> · commons-geo/src/main/java/utnfc/isi/back/tpi/geo/<b>OsrmGeoService.java</b> · líneas 17–66</div>
+      <div class="ruta"><b>Resultado común</b> · commons-geo/…/geo/<b>Ruta.java</b> (km, minutos, fuente OSRM/HAVERSINE)</div>
+      <div class="ruta"><b>Registro como bean</b> · commons-geo/…/geo/<b>GeoAutoConfiguration.java</b> · líneas 20–36</div>
+      <div class="ruta"><b>Uso</b> · ms-solicitudes/…/services/<b>SolicitudService.java</b> → <code>aceptar()</code> línea 223</div>
+      <div class="tarjeta borde-violeta" style="margin-top:4px;"><p class="chico"><strong>Otro Adapter en el proyecto:</strong> <code>ReactiveJwtAuthenticationConverterAdapter</code> adapta el conversor de roles (MVC) al gateway reactivo (WebFlux).<br><span class="nota">api-gateway/src/main/java/utnfc/isi/back/tpi/gateway/config/SecurityConfig.java · línea 75</span></p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 16. ADAPTER: CÓDIGO -->
+<section class="slide">
+  <div class="seccion">07 · Patrón Adapter · código</div>
+  <h2>Traducir la petición y la respuesta de OSRM</h2>
+  <div class="fila" style="grid-template-columns: 0.85fr 1.65fr;">
+    <div style="display:grid; gap:14px; align-content:start;">
+      <div class="codigo">
+        <div class="cab">commons-geo/…/geo/GeoService.java</div>
+        <pre data-inicio="4" data-marca="6">public interface GeoService {
+
+    Ruta calcularRuta(double latOrigen, double lonOrigen, double latDestino, double lonDestino);
+}</pre>
+      </div>
+      <ul class="lista chico">
+        <li><strong>L36:</strong> adapta la <strong>entrada</strong>: lon antes que lat y punto decimal (<code>Locale.US</code>).</li>
+        <li><strong>L48–52:</strong> adapta la <strong>salida</strong>: metros → km, segundos → minutos, en un <code>Ruta</code>.</li>
+        <li><strong>L53–55:</strong> si OSRM falla, respaldo con Haversine: el negocio nunca se entera.</li>
+        <li><strong>L60–64:</strong> records privados con la forma del JSON de OSRM; no salen del adaptador.</li>
+      </ul>
+    </div>
+    <div class="codigo compacto" style="align-self:start;">
+      <div class="cab">commons-geo/src/main/java/utnfc/isi/back/tpi/geo/OsrmGeoService.java · <b>class OsrmGeoService implements GeoService</b> (L17)</div>
+      <pre data-inicio="29" data-marca="36,48,49,50,52,53,55" data-omitir="31-34,42-47">    @Override
+    public Ruta calcularRuta(double latOrigen, double lonOrigen, double latDestino, double lonDestino) {
+        // ... si OSRM está deshabilitado → Haversine
+        // OSRM espera las coordenadas como longitud,latitud
+        String coordenadas = String.format(Locale.US, "%f,%f;%f,%f", lonOrigen, latOrigen, lonDestino, latDestino);
+        try {
+            OsrmRespuesta respuesta = restClient.get()
+                    .uri("/route/v1/driving/{coordenadas}?overview=false", coordenadas)
+                    .retrieve()
+                    .body(OsrmRespuesta.class);
+            // ... si la respuesta viene vacía o sin rutas → Haversine
+            OsrmRuta ruta = respuesta.routes().getFirst();
+            double km = Haversine.redondear(ruta.distance() / 1000.0);
+            int minutos = (int) Math.ceil(ruta.duration() / 60.0);
+            log.info("Ruta OSRM calculada: {} km, {} min", km, minutos);
+            return new Ruta(km, minutos, Ruta.Fuente.OSRM);
+        } catch (RestClientException e) {
+            log.warn("OSRM no disponible ({}), se usa Haversine como respaldo", e.getMessage());
+            return Haversine.ruta(latOrigen, lonOrigen, latDestino, lonDestino);
+        }
+    }</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 17. CICLO DE VIDA: DIAGRAMA -->
+<section class="slide">
+  <div class="seccion">08 · Ciclo de vida de la solicitud</div>
+  <h2>Máquina de estados (RN-7)</h2>
+  <svg viewBox="0 0 1140 440" style="width:100%; flex:1;" role="img" aria-label="Diagrama de estados de la solicitud">
+    <defs>
+      <marker id="e1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1f5fbf"/></marker>
+      <marker id="e2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#52607a"/></marker>
+    </defs>
+    <g font-family="Inter, Segoe UI, sans-serif" text-anchor="middle">
+      <circle cx="18" cy="190" r="10" fill="#14213d"/>
+      <rect x="55" y="160" width="160" height="60" rx="12" fill="#fff4cc" stroke="#e0a100" stroke-width="2"/><text x="135" y="196" font-size="16" font-weight="700" fill="#14213d">PENDIENTE</text>
+      <rect x="290" y="160" width="160" height="60" rx="12" fill="#ede5fb" stroke="#6b3fc0" stroke-width="2.5"/><text x="370" y="189" font-size="16" font-weight="700" fill="#14213d">OFERTADA</text><text x="370" y="208" font-size="11.5" fill="#52607a">15 min</text>
+      <rect x="525" y="160" width="160" height="60" rx="12" fill="#e3ecfb" stroke="#1f5fbf" stroke-width="2.5"/><text x="605" y="189" font-size="16" font-weight="700" fill="#14213d">ASIGNADA</text><text x="605" y="208" font-size="11.5" fill="#52607a">costo calculado</text>
+      <rect x="760" y="160" width="160" height="60" rx="12" fill="#d8f2ee" stroke="#0f7a6b" stroke-width="2.5"/><text x="840" y="189" font-size="16" font-weight="700" fill="#14213d">EN_CURSO</text><text x="840" y="208" font-size="11.5" fill="#52607a">máx. 1 por técnico</text>
+      <rect x="975" y="160" width="160" height="60" rx="12" fill="#ddf3e6" stroke="#1f8a52" stroke-width="2"/><text x="1055" y="196" font-size="16" font-weight="700" fill="#14213d">FINALIZADA</text>
+      <rect x="370" y="345" width="160" height="56" rx="12" fill="#fbe2e2" stroke="#b3373b" stroke-width="2"/><text x="450" y="379" font-size="16" font-weight="700" fill="#14213d">CANCELADA</text>
+      <rect x="760" y="345" width="180" height="56" rx="12" fill="#fde9d3" stroke="#a05a00" stroke-width="2"/><text x="850" y="379" font-size="16" font-weight="700" fill="#14213d">REPROGRAMADA</text>
+      <rect x="480" y="20" width="160" height="52" rx="12" fill="#eef1f6" stroke="#52607a" stroke-width="2"/><text x="560" y="52" font-size="16" font-weight="700" fill="#14213d">DERIVADA</text>
+      <g stroke="#1f5fbf" stroke-width="2.5" fill="none" marker-end="url(#e1)">
+        <line x1="28" y1="190" x2="52" y2="190"/>
+        <line x1="215" y1="190" x2="287" y2="190"/><line x1="450" y1="190" x2="522" y2="190"/>
+        <line x1="685" y1="190" x2="757" y2="190"/><line x1="920" y1="190" x2="972" y2="190"/>
+      </g>
+      <text x="251" y="180" font-size="12" fill="#1f5fbf" font-weight="600">ofertar</text>
+      <text x="486" y="180" font-size="12" fill="#1f5fbf" font-weight="600">aceptar</text>
+      <text x="721" y="180" font-size="12" fill="#1f5fbf" font-weight="600">aprobar</text>
+      <text x="946" y="180" font-size="12" fill="#1f5fbf" font-weight="600">finalizar</text>
+      <g stroke="#52607a" stroke-width="2" fill="none" marker-end="url(#e2)">
+        <path d="M 370 160 C 370 110, 135 110, 135 157"/>
+        <path d="M 135 220 C 135 300, 300 372, 367 372"/>
+        <line x1="380" y1="220" x2="430" y2="342"/>
+        <line x1="590" y1="220" x2="490" y2="342"/>
+        <line x1="820" y1="220" x2="820" y2="342"/>
+        <line x1="880" y1="345" x2="880" y2="223"/>
+        <path d="M 840 160 C 840 46, 700 46, 643 46"/>
+        <path d="M 480 46 C 100 46, 90 110, 110 157"/>
+      </g>
+      <text x="252" y="104" font-size="12" fill="#52607a">rechaza / vence (+ reoferta si es automática)</text>
+      <text x="250" y="320" font-size="12" fill="#52607a">cancelar</text>
+      <text x="790" y="285" font-size="12" fill="#52607a" text-anchor="end">falta repuesto</text>
+      <text x="890" y="285" font-size="12" fill="#52607a" text-anchor="start">reanudar</text>
+      <text x="760" y="36" font-size="12" fill="#52607a">supera la certificación</text>
+      <text x="260" y="36" font-size="12" fill="#52607a">vuelve a buscar técnico</text>
+      <circle cx="1055" cy="260" r="10" fill="none" stroke="#14213d" stroke-width="2"/><circle cx="1055" cy="260" r="5" fill="#14213d"/>
+      <line x1="1055" y1="220" x2="1055" y2="248" stroke="#52607a" stroke-width="2" marker-end="url(#e2)"/>
+    </g>
+  </svg>
+  <p class="nota">Un solo estado a la vez. Cualquier salto no permitido → <span class="etiqueta etq-mal">422</span>. Cada cambio queda en <code>HistorialEstado</code> con fecha, hora, usuario y observación.</p>
+</section>
+
+<!-- ================================================================ 18. CICLO DE VIDA: CÓDIGO -->
+<section class="slide">
+  <div class="seccion">08 · Ciclo de vida · código</div>
+  <h2>El mapa de transiciones y quién mueve los estados</h2>
+  <div class="fila" style="grid-template-columns: 1.85fr 1fr;">
+    <div class="codigo compacto" style="align-self:start;--fs:12px;">
+      <div class="cab">ms-solicitudes/src/main/java/utnfc/isi/back/tpi/solicitudes/models/EstadoSolicitud.java</div>
+      <pre data-inicio="16" data-marca="20,25,26,27,28,35,36">public enum EstadoSolicitud {
+    PENDIENTE, OFERTADA, ASIGNADA, EN_CURSO, REPROGRAMADA, DERIVADA, CANCELADA, FINALIZADA;
+
+    /** Estados que ocupan un lugar "en espera" en la agenda del técnico (RN-5). */
+    public static final Set&lt;EstadoSolicitud&gt; EN_ESPERA = EnumSet.of(OFERTADA, ASIGNADA, REPROGRAMADA);
+
+    private static final Map&lt;EstadoSolicitud, Set&lt;EstadoSolicitud&gt;&gt; TRANSICIONES = new EnumMap&lt;&gt;(EstadoSolicitud.class);
+
+    static {
+        TRANSICIONES.put(PENDIENTE, EnumSet.of(OFERTADA, CANCELADA));
+        TRANSICIONES.put(OFERTADA, EnumSet.of(ASIGNADA, PENDIENTE, CANCELADA));
+        TRANSICIONES.put(ASIGNADA, EnumSet.of(EN_CURSO, CANCELADA));
+        TRANSICIONES.put(EN_CURSO, EnumSet.of(FINALIZADA, REPROGRAMADA, DERIVADA));
+        TRANSICIONES.put(REPROGRAMADA, EnumSet.of(EN_CURSO));
+        TRANSICIONES.put(DERIVADA, EnumSet.of(PENDIENTE));
+        TRANSICIONES.put(CANCELADA, EnumSet.noneOf(EstadoSolicitud.class));
+        TRANSICIONES.put(FINALIZADA, EnumSet.noneOf(EstadoSolicitud.class));
+    }
+
+    public boolean puedePasarA(EstadoSolicitud destino) {
+        return TRANSICIONES.get(this).contains(destino);
+    }
+}</pre>
+    </div>
+    <div style="display:grid; gap:10px; align-content:start;">
+      <div class="tarjeta borde-acento chico" style="padding:12px 16px;"><h3 style="font-size:17px;">🧭 Un solo lugar cambia el estado</h3>
+        <p><code>transicionar()</code> valida con <code>puedePasarA()</code>, cambia el estado y registra el historial.</p></div>
+      <div class="tarjeta borde-ok chico" style="padding:12px 16px;"><h3 style="font-size:17px;">🤖 Automático · 🖐️ Manual</h3>
+        <p><strong>AUTOMATICA:</strong> el sistema oferta solo y pasa al siguiente sin repetir (<code>tecnicosDescartados</code>). <strong>MANUAL:</strong> <code>/elegir</code> + <code>/ofertar</code>.</p></div>
+      <div class="tarjeta borde-pato chico" style="padding:12px 16px;"><h3 style="font-size:17px;">⏱️ El reloj de 15 minutos</h3>
+        <p><code>OfertaScheduler</code> (<code>@Scheduled</code>, cada 30 s) vence ofertas, una transacción por solicitud; <code>@Version</code> evita choques.</p></div>
+      <p class="nota" style="font-size:13px;">También: …/services/<b>SolicitudService.java</b> · …/services/<b>OfertaScheduler.java</b> · …/models/<b>HistorialEstado.java</b></p>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================ 19. CIERRE -->
+<section class="slide portada">
+  <div class="seccion">Cierre</div>
+  <h1 style="font-size:54px;">Resumen</h1>
+  <div class="fila dos" style="flex:0 0 auto; margin-top:26px;">
+    <ul class="lista" style="color:#e9effa;">
+      <li><strong style="color:#fff;">Dominio:</strong> del pedido artesanal a un flujo con reglas automáticas (RN-1 a RN-11).</li>
+      <li><strong style="color:#fff;">Arquitectura:</strong> gateway + 3 microservicios + librería común, Keycloak y Docker.</li>
+      <li><strong style="color:#fff;">Patrones:</strong> Strategy (costos), Snapshot (datos del momento), Adapter (mapas).</li>
+      <li><strong style="color:#fff;">Ciclo de vida:</strong> 8 estados con transiciones validadas y auditadas.</li>
+    </ul>
+    <div style="background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.2); border-radius:14px; padding:22px;">
+      <h3 style="color:#ffd766;">Demo en vivo</h3>
+      <p style="color:#e9effa; font-size:17px;">🖥️ Frontend: <code>localhost:47300</code><br>📘 Swagger: <code>localhost:47380/swagger-ui.html</code><br>🔑 Keycloak: <code>localhost:47390</code><br>🧪 Postman: 83 peticiones con tests</p>
+    </div>
+  </div>
+  <p style="margin-top:34px; font-size:28px; color:#fff;">¿Preguntas? 🦆</p>
+</section>
+
+</div></div>
+
+<div id="controles" aria-label="Controles de la presentación">
+  <button type="button" id="ant" title="Anterior (←)">◀</button>
+  <span id="contador">1 / 1</span>
+  <button type="button" id="sig" title="Siguiente (→)">▶</button>
+  <button type="button" id="pantalla" title="Pantalla completa (F)">⛶</button>
+</div>
+
+<script>
+  // ---------------------------------------------------------------- resaltado simple de Java + números de línea
+  const PALABRAS = new Set("public private protected static final class interface enum record default return new if else try catch throw this implements extends void boolean double int long".split(" "));
+  function resaltar(linea) {
+    const partes = linea.match(/\/\/.*|\/\*\*?.*?\*\/|"(?:[^"\\]|\\.)*"|@\w+|\b\d+(?:\.\d+)?\b|\b[A-Za-z_]\w*\b|[^\w"@\/]+|./g) || [];
+    return partes.map(p => {
+      const t = p.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      if (p.startsWith("//") || p.startsWith("/*")) return `<span class="tk-cm">${t}</span>`;
+      if (p.startsWith('"')) return `<span class="tk-st">${t}</span>`;
+      if (p.startsWith("@")) return `<span class="tk-an">${t}</span>`;
+      if (/^\d/.test(p)) return `<span class="tk-nu">${t}</span>`;
+      if (PALABRAS.has(p)) return `<span class="tk-kw">${t}</span>`;
+      if (/^[A-Z][a-zA-Z0-9]*$/.test(p) && !/^[A-Z_]+$/.test(p)) return `<span class="tk-ty">${t}</span>`;
+      return t;
+    }).join("");
+  }
+  function rango(texto) {
+    const res = new Set();
+    (texto || "").split(",").filter(Boolean).forEach(p => {
+      const [a, b] = p.split("-").map(Number);
+      for (let i = a; i <= (b || a); i++) res.add(i);
+    });
+    return res;
+  }
+  document.querySelectorAll(".codigo pre").forEach(pre => {
+    let n = Number(pre.dataset.inicio || 1) - 1;
+    const marcas = rango(pre.dataset.marca);
+    const omitir = rango(pre.dataset.omitir);   // líneas reales que no se muestran (fragmento resumido)
+    const lineas = pre.textContent.replace(/\n$/, "").split("\n");
+    pre.innerHTML = lineas.map(l => {
+      const resumen = l.trim().startsWith("// ...");   // "⋮": acá se resumieron líneas del archivo real
+      if (!resumen) { n++; while (omitir.has(n)) n++; }
+      return `<span class="ln${!resumen && marcas.has(n) ? " marca" : ""}"><span class="n">${resumen ? "⋮" : n}</span>${resaltar(l)}</span>`;
+    }).join("");
+  });
+
+  // ---------------------------------------------------------------- navegación
+  const slides = [...document.querySelectorAll(".slide")];
+  slides.forEach((s, i) => s.dataset.num = `${i + 1} / ${slides.length}`);
+  let actual = 0;
+  function mostrar(i) {
+    actual = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach((s, k) => s.classList.toggle("activa", k === actual));
+    document.getElementById("contador").textContent = `${actual + 1} / ${slides.length}`;
+    document.getElementById("progreso").style.width = `${(actual + 1) * 100 / slides.length}%`;
+    history.replaceState(null, "", `#${actual + 1}`);
+  }
+  function escalar() {
+    const k = Math.min(window.innerWidth / 1320, window.innerHeight / 760);
+    document.getElementById("lienzo").style.transform = `scale(${k})`;
+  }
+  document.addEventListener("keydown", e => {
+    if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); mostrar(actual + 1); }
+    if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); mostrar(actual - 1); }
+    if (e.key === "Home") mostrar(0);
+    if (e.key === "End") mostrar(slides.length - 1);
+    if (e.key === "f" || e.key === "F") pantallaCompleta();
+  });
+  function pantallaCompleta() {
+    if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.();
+  }
+  document.getElementById("ant").onclick = () => mostrar(actual - 1);
+  document.getElementById("sig").onclick = () => mostrar(actual + 1);
+  document.getElementById("pantalla").onclick = pantallaCompleta;
+  window.addEventListener("resize", escalar);
+  escalar();
+  mostrar((Number(location.hash.slice(1)) || 1) - 1);
+</script>
+</body>
+</html>
