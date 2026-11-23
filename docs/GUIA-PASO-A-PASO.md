@@ -127,33 +127,38 @@ Para apagar: `docker compose down`. Para apagar y **borrar los datos** (empezar 
 
 Entrá a 👉 **http://localhost:47300**. Te lleva a la pantalla de login de Keycloak (la boletería). Iniciá sesión con uno de estos usuarios:
 
-| Usuario | Contraseña | Qué puede hacer en la página |
-|---|---|---|
-| `cliente1` | `cliente123` | Crear solicitudes, buscar candidatos, ofertar (modo manual), aprobar o rechazar presupuestos, cancelar |
-| `tecnico1` | `tecnico123` | Aceptar o rechazar ofertas, cargar presupuestos, finalizar, reprogramar, derivar, cambiar disponibilidad |
-| `admin1` | `admin123` | Todo lo anterior, más ver la lista de clientes |
+| Usuario | Contraseña | Quién es | Qué ve y qué puede hacer |
+|---|---|---|---|
+| `cliente1` | `cliente123` | Carlos García (cliente nº 1) | **Mis solicitudes** (solo las suyas), **Nueva solicitud** y **Mis datos** (ver y corregir su domicilio). Aprueba o rechaza presupuestos, cancela y, en modo manual, elige a quién ofertar |
+| `tecnico1` | `tecnico123` | Juan Pérez (técnico nº 1) | **Mis trabajos** (solo las ofertas y trabajos suyos) y **Mis datos** (su perfil y su disponibilidad). Acepta o rechaza, presupuesta, finaliza, reprograma, deriva |
+| `tecnico2` | `tecnico123` | Ana Gómez (técnica nº 2) | Lo mismo que `tecnico1`, pero con sus propios trabajos |
+| `admin1` | `admin123` | Administrador | **Todo**: todas las solicitudes y las listas completas de técnicos y clientes |
+
+> 🔒 **Cada uno ve solo lo suyo.** El cliente no puede ver la lista de técnicos ni las solicitudes de otros clientes. ¿Cómo sabe la página quién sos? Keycloak guarda en tu usuario tu número de cliente o de técnico y lo **mete adentro del token** (`clienteId` / `tecnicoId`). La página lo lee de ahí, así que nadie puede hacerse pasar por otro desde el navegador.
 
 > 💡 La página **no** pide la contraseña ella misma: te manda a Keycloak, Keycloak te devuelve a la página con un código, y la página lo cambia por el token. Ese es el flujo **Authorization Code + PKCE**, el que recomiendan los apuntes.
 
 ### Una demo completa con el frontend (modo automático)
 Para cambiar de usuario, tocá **Salir** arriba a la derecha.
 
-1. **Como `cliente1`**: andá a **Nueva solicitud**. Dejá cliente `1`, elegí la especialidad **Impresoras** y dejá marcada la asignación **Automática**. Tocá **Crear solicitud**.
+1. **Como `cliente1`**: andá a **Nueva solicitud**. El cliente ya viene fijo (sos el nº 1). Elegí la especialidad **Impresoras** y dejá marcada la asignación **Automática**. Tocá **Crear solicitud**.
    → Aparece un aviso: *"Se ofertó automáticamente a Juan Pérez"*. En el detalle se ve la cuenta regresiva de la oferta.
-2. **Salí y entrá como `tecnico1`**: arriba, en **"Soy el técnico"**, elegí **Juan Pérez**. Abrí la solicitud y tocá **Rechazar**.
-   → El aviso dice que el sistema buscó al siguiente. En el detalle, la oferta ahora es para **Ana Gómez** y Juan figura como **descartado**.
-3. Cambiá **"Soy el técnico"** a **Ana Gómez**. Tocá **Aceptar oferta**.
+2. **Salí y entrá como `tecnico1`** (Juan): en **Mis trabajos** está la oferta. Abrila y tocá **Rechazar**.
+   → El aviso dice que el sistema buscó al siguiente, y la solicitud **desaparece** de la lista de Juan: ya no es suya.
+3. **Salí y entrá como `tecnico2`** (Ana): la oferta ahora está en **sus** trabajos. Tocá **Aceptar oferta**.
    → Pasa a **ASIGNADA** y aparece el recuadro del costo: km, fuente (OSRM), estrategia, base, recargo y visita.
 4. Todavía como técnico: completá el **diagnóstico** y el **importe** y tocá **Cargar presupuesto**.
 5. **Salí y entrá como `cliente1`**: abrí la solicitud y tocá **Aprobar presupuesto** → **EN_CURSO**.
-6. **Como `tecnico1`** (con Ana elegida): tocá **Finalizar trabajo** → **FINALIZADA**.
+6. **Como `tecnico2`** (Ana): tocá **Finalizar trabajo** → **FINALIZADA**.
 7. Abajo del detalle está el **Historial**: cada paso con fecha, hora y quién lo hizo. Las ofertas aparecen hechas por `sistema`.
+8. **Como `admin1`**: en **Solicitudes** ves todas, y en el detalle aparece a quién descartó el sistema (Juan). También tenés las pestañas **Informe**, **Técnicos** y **Clientes**.
+9. **El informe (`admin1` → pestaña Informe):** es el "tablero" del administrador. Arriba tiene 6 números grandes: solicitudes, finalizadas, facturado, ticket promedio, % de ofertas aceptadas y distancia promedio. Debajo hay gráficos de barras: estados, qué pasó con las ofertas (aceptadas, rechazadas, vencidas), estrategias de costo, tipos de servicio, modo y prioridad. Al final, una tabla por técnico. Podés filtrar por fechas y tocar **Imprimir / PDF** para guardarlo.
 
 > 💡 La lista se actualiza sola cada 4 segundos. Si dejás vencer una oferta (con `OFERTA_VENTANA_MINUTOS=1`, ver EN-07 en la sección 6), la vas a ver pasar sola al siguiente técnico.
 
-Para mostrar el **modo manual**, en el paso 1 elegí **Manual**: la solicitud queda **PENDIENTE** y aparece el botón **Buscar candidatos y ofertar**, con la lista de técnicos, la distancia y el costo de cada uno.
+Para mostrar el **modo manual**, en el paso 1 elegí **Manual**: la solicitud queda **PENDIENTE** y aparece el botón **Buscar candidatos y ofertar**, con los técnicos candidatos **para esa solicitud** (distancia y costo de cada uno). Es lo único que el cliente ve de los técnicos: los que le sirven para su pedido, no la lista completa.
 
-> ⚠️ En Keycloak, `tecnico1` no está atado a un técnico del padrón. Por eso la página te deja elegir "Soy el técnico". Es una simplificación para la demo: el backend no valida qué técnico real sos.
+> ⚠️ El filtro "cada uno ve lo suyo" lo hace **la página**. La API (Postman o Swagger) todavía le permite a un CLIENTE consultar `GET /api/v1/tecnicos` y la lista de solicitudes, porque así quedó comprometido en el formulario del TPI (sección 10).
 
 ---
 

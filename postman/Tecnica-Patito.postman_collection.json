@@ -702,6 +702,70 @@
           ]
         },
         {
+          "name": "Informe de gestión (ADMINISTRADOR)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 200\", () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test(\"Trae todas las secciones\", () => [\"totalSolicitudes\", \"porEstado\", \"porEstrategia\", \"facturacion\", \"ofertas\", \"porTecnico\"].forEach(k => pm.expect(r, k).to.have.property(k)));",
+                  "pm.test(\"El total coincide con la suma por estado\", () => pm.expect(Object.values(r.porEstado).reduce((a, b) => a + b, 0)).to.eql(r.totalSolicitudes));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/informe",
+            "description": "Cantidades por estado, modo, prioridad y tipo; estrategias de costo; facturación; embudo de ofertas y desempeño por técnico. Acepta ?desde=AAAA-MM-DD&hasta=AAAA-MM-DD.",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_admin}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Informe con un CLIENTE → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status 403\", () => pm.response.to.have.status(403));",
+                  "pm.test(\"Respuesta ProblemDetail\", () => { const b = pm.response.json(); pm.expect(b.status).to.eql(403); pm.expect(b.detail).to.be.a(\"string\"); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{gateway_url}}/api/v1/solicitudes/informe",
+            "description": "",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token_cliente}}",
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        },
+        {
           "name": "Elegir: URGENTE fuera de horario → estrategia COMBINADA (RN-11)",
           "request": {
             "method": "POST",

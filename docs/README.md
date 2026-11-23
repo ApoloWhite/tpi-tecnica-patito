@@ -5,7 +5,8 @@ Leela en este orden. Cada parte usa lo que explicó la anterior.
 | # | Documento | Qué vas a aprender | Para quién |
 |---|---|---|---|
 | 1 | [GUIA-PASO-A-PASO.md](GUIA-PASO-A-PASO.md) | Qué es cada pieza (con la analogía del edificio), cómo encender todo y cómo mostrar el flujo con el frontend, Swagger y Postman | Todos. Empezá acá |
-| 2 | [COMO-FUNCIONA.md](COMO-FUNCIONA.md) | El viaje completo de una petición por adentro del sistema y un diccionario de todas las palabras raras (bean, DTO, JPA, JWT…) | Antes de leer el código |
+| 2 | [COMO-FUNCIONA.md](COMO-FUNCIONA.md) | El viaje completo de una petición por adentro del sistema, los **patrones de diseño** que se usan (Strategy, State, Circuit Breaker…) y un diccionario de todas las palabras raras (bean, DTO, JPA, JWT…) | Antes de leer el código |
+| 2b | [TECNOLOGIAS.md](TECNOLOGIAS.md) | Todas las tecnologías y frameworks usados, con su versión real, para qué sirve cada uno y por qué se eligió | Todos |
 | 3 | [codigo/01-proyecto-maven.md](codigo/01-proyecto-maven.md) | Cómo está armado el proyecto: el `pom.xml` padre y los de cada módulo | Código |
 | 4 | [codigo/02-commons-geo.md](codigo/02-commons-geo.md) | La librería que calcula distancias (Haversine y OSRM) | Código |
 | 5 | [codigo/03-ms-clientes.md](codigo/03-ms-clientes.md) | **El microservicio más simple, explicado entero.** Acá se explican las piezas que se repiten en todos: seguridad, errores, correlation id y Swagger | Código. Leelo antes que los otros microservicios |

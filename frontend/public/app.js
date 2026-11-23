@@ -2,6 +2,8 @@
 // 1) Inicia sesión en Keycloak (Authorization Code + PKCE) con la librería oficial keycloak-js.
 // 2) Llama al API Gateway con el token en el header Authorization.
 // 3) Muestra u oculta acciones según el rol, pero quien decide de verdad es el backend (401/403/422).
+// 4) Cada usuario ve solo lo suyo: el número de cliente o de técnico viene DENTRO del token
+//    (claims clienteId / tecnicoId que agrega Keycloak), así nadie puede hacerse pasar por otro desde la página.
 import Keycloak from "https://cdn.jsdelivr.net/npm/keycloak-js@26.0.7/+esm";
 
 const CFG = window.PATITO_CONFIG;
@@ -18,22 +20,15 @@ const estado = {
     tecnicos: [],
     solicitudes: [],
     filtroEstado: "",
-    soloMias: true,
     seleccionada: null,
     historial: [],
     candidatos: null,
-    clienteActual: Number(leer("patito.clienteActual", "1")),
-    tecnicoActual: Number(leer("patito.tecnicoActual", "1")),
+    clienteActual: null,   // sale del token (claim clienteId)
+    tecnicoActual: null,   // sale del token (claim tecnicoId)
 };
 
 // ------------------------------------------------------------------ utilidades
 
-function leer(clave, porDefecto) {
-    try { return localStorage.getItem(clave) ?? porDefecto; } catch { return porDefecto; }
-}
-function guardar(clave, valor) {
-    try { localStorage.setItem(clave, String(valor)); } catch { /* sin almacenamiento: no pasa nada */ }
-}
 function esc(valor) {
     return String(valor ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 }
@@ -42,6 +37,8 @@ const tiene = rol => estado.roles.includes(rol);
 const esAdmin = () => tiene("ADMINISTRADOR");
 const puedeCliente = () => esAdmin() || tiene("CLIENTE");
 const puedeTecnico = () => esAdmin() || tiene("TECNICO");
+const esSoloCliente = () => tiene("CLIENTE") && !esAdmin();
+const esSoloTecnico = () => tiene("TECNICO") && !esAdmin();
 const pesos = n => n == null ? "—" : Number(n).toLocaleString("es-AR", { style: "currency", currency: "ARS" });
 const fecha = f => f ? new Date(f).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "—";
 const chipEstado = e => `<span class="chip estado ${esc(e)}">${esc(e.replace("_", " "))}</span>`;
@@ -96,10 +93,22 @@ async function iniciar() {
     $("#usuario-rol").textContent = rolPrincipal;
     $("#btn-salir").addEventListener("click", () => keycloak.logout({ redirectUri: window.location.origin }));
 
+    // Quién soy en el padrón: lo dice el token, no se elige en la página
+    estado.clienteActual = keycloak.tokenParsed?.clienteId ?? null;
+    estado.tecnicoActual = keycloak.tokenParsed?.tecnicoId ?? null;
+    if ((esSoloCliente() && estado.clienteActual == null) || (esSoloTecnico() && estado.tecnicoActual == null)) {
+        $("#contenido").innerHTML = `<div class="panel"><h2>Tu usuario no está vinculado al padrón</h2>
+            <p class="ayuda">En Keycloak, el usuario necesita el atributo ${esSoloCliente() ? "clienteId" : "tecnicoId"}.</p></div>`;
+        return;
+    }
+    if (estado.clienteActual != null) $("#usuario-nombre").textContent += ` · cliente nº ${estado.clienteActual}`;
+    if (estado.tecnicoActual != null) $("#usuario-nombre").textContent += ` · técnico nº ${estado.tecnicoActual}`;
+
     try {
         const certs = await api("GET", "/api/v1/certificaciones");
         certs.forEach(c => estado.certificaciones.set(c.id, c.nombre));
-        estado.tecnicos = (await api("GET", "/api/v1/tecnicos?size=100")).content;
+        // La lista de técnicos solo la necesita (y la puede ver) el administrador
+        if (esAdmin()) estado.tecnicos = (await api("GET", "/api/v1/tecnicos?size=100")).content;
     } catch { /* el aviso ya se mostró */ }
 
     dibujarPestanias();
@@ -108,10 +117,11 @@ async function iniciar() {
 }
 
 function dibujarPestanias() {
-    const pestanias = [["solicitudes", "Solicitudes"]];
+    const titulo = esSoloCliente() ? "Mis solicitudes" : esSoloTecnico() ? "Mis trabajos" : "Solicitudes";
+    const pestanias = [["solicitudes", titulo]];
     if (puedeCliente()) pestanias.push(["nueva", "Nueva solicitud"]);
-    pestanias.push(["tecnicos", "Técnicos"]);
-    if (esAdmin()) pestanias.push(["clientes", "Clientes"]);
+    if (esSoloCliente() || esSoloTecnico()) pestanias.push(["mis-datos", "Mis datos"]);
+    if (esAdmin()) pestanias.push(["informe", "Informe"], ["tecnicos", "Técnicos"], ["clientes", "Clientes"]);
     $("#pestanias").innerHTML = pestanias.map(([id, texto]) =>
         `<button type="button" data-pestania="${id}" ${estado.pestania === id ? 'aria-current="page"' : ""}>${texto}</button>`).join("");
     $("#pestanias").querySelectorAll("button").forEach(b => b.addEventListener("click", () => mostrar(b.dataset.pestania)));
@@ -122,6 +132,8 @@ async function mostrar(pestania) {
     dibujarPestanias();
     if (pestania === "solicitudes") return vistaSolicitudes();
     if (pestania === "nueva") return vistaNueva();
+    if (pestania === "mis-datos") return esSoloCliente() ? vistaMisDatosCliente() : vistaMisDatosTecnico();
+    if (pestania === "informe") return vistaInforme();
     if (pestania === "tecnicos") return vistaTecnicos();
     if (pestania === "clientes") return vistaClientes();
 }
@@ -138,39 +150,24 @@ async function refrescar() {
 
 async function vistaSolicitudes() {
     const opciones = ESTADOS.map(e => `<option value="${e}" ${estado.filtroEstado === e ? "selected" : ""}>${e}</option>`).join("");
-    const selectorIdentidad = tiene("TECNICO") && !esAdmin()
-        ? `<label>Soy el técnico
-             <select id="tecnico-actual">${estado.tecnicos.map(t =>
-                `<option value="${t.id}" ${t.id === estado.tecnicoActual ? "selected" : ""}>${esc(t.nombre)} ${esc(t.apellido)}</option>`).join("")}</select>
-           </label>`
-        : tiene("CLIENTE") && !esAdmin()
-            ? `<label>Soy el cliente nº <input id="cliente-actual" type="number" min="1" value="${estado.clienteActual}" style="width:80px"></label>`
-            : "";
+    const quien = esSoloCliente() ? `Ves solo tus solicitudes (cliente nº ${estado.clienteActual}).`
+        : esSoloTecnico() ? `Ves solo las ofertas y trabajos asignados a vos (técnico nº ${estado.tecnicoActual}).`
+        : "Como administrador ves todas las solicitudes.";
     $("#contenido").innerHTML = `
       <div class="grilla">
         <section class="panel">
           <div class="cabecera">
-            <h2>Solicitudes</h2>
+            <h2>${esSoloCliente() ? "Mis solicitudes" : esSoloTecnico() ? "Mis trabajos" : "Solicitudes"}</h2>
             <div class="filtros">
-              ${selectorIdentidad}
-              ${!esAdmin() ? `<label><input type="checkbox" id="solo-mias" ${estado.soloMias ? "checked" : ""}> Solo las mías</label>` : ""}
               <select id="filtro-estado" aria-label="Filtrar por estado"><option value="">Todos los estados</option>${opciones}</select>
             </div>
           </div>
-          <p class="ayuda">Se actualiza sola cada ${REFRESCO_MS / 1000} segundos: vas a ver las ofertas automáticas y los vencimientos.</p>
+          <p class="ayuda">${quien} Se actualiza sola cada ${REFRESCO_MS / 1000} segundos: vas a ver las ofertas automáticas y los vencimientos.</p>
           <div class="tabla-scroll" id="tabla-solicitudes"></div>
         </section>
         <section class="panel" id="detalle"><p class="ayuda">Elegí una solicitud para ver su detalle, sus acciones y su historial.</p></section>
       </div>`;
     $("#filtro-estado").addEventListener("change", e => { estado.filtroEstado = e.target.value; cargarSolicitudes(); });
-    $("#solo-mias")?.addEventListener("change", e => { estado.soloMias = e.target.checked; cargarSolicitudes(); });
-    $("#tecnico-actual")?.addEventListener("change", e => {
-        estado.tecnicoActual = Number(e.target.value); guardar("patito.tecnicoActual", estado.tecnicoActual); cargarSolicitudes();
-        if (estado.seleccionada) dibujarDetalle();
-    });
-    $("#cliente-actual")?.addEventListener("change", e => {
-        estado.clienteActual = Number(e.target.value); guardar("patito.clienteActual", estado.clienteActual); cargarSolicitudes();
-    });
     await cargarSolicitudes();
     if (estado.seleccionada) await cargarDetalle(estado.seleccionada.id);
 }
@@ -182,10 +179,8 @@ async function cargarSolicitudes(silencioso = false) {
         pagina = await api("GET", `/api/v1/solicitudes?size=50&sort=id,desc${filtro}`);
     } catch { return; }
     let lista = pagina.content;
-    if (!esAdmin() && estado.soloMias) {
-        if (tiene("TECNICO")) lista = lista.filter(s => s.tecnicoId === estado.tecnicoActual);
-        else if (tiene("CLIENTE")) lista = lista.filter(s => s.clienteId === estado.clienteActual);
-    }
+    if (esSoloCliente()) lista = lista.filter(s => s.clienteId === estado.clienteActual);
+    else if (esSoloTecnico()) lista = lista.filter(s => s.tecnicoId === estado.tecnicoActual);
     estado.solicitudes = lista;
     const contenedor = $("#tabla-solicitudes");
     if (!contenedor) return;
@@ -250,7 +245,7 @@ function dibujarDetalle() {
         ${dato("Programada", fecha(s.fechaHoraProgramada))}
         ${dato("Técnico", esc(s.tecnicoNombre ?? "—"))}
         ${dato("Vence la oferta en", cuenta)}
-        ${dato("Descartados", s.tecnicosDescartados.length ? esc(s.tecnicosDescartados.map(nombreTecnico).join(", ")) : "—")}
+        ${esAdmin() ? dato("Descartados", s.tecnicosDescartados.length ? esc(s.tecnicosDescartados.map(nombreTecnico).join(", ")) : "—") : ""}
         ${dato("Falla", esc(s.descripcion))}
         ${s.diagnostico ? dato("Diagnóstico", esc(s.diagnostico)) : ""}
       </dl>
@@ -294,7 +289,7 @@ function acciones(s) {
             break;
         case "OFERTADA":
             if (puedeTecnico() && tecnicoDeLaOferta) botones.push(b("aceptar", "Aceptar oferta", "ok"), b("rechazar", "Rechazar", "secundario"));
-            if (puedeTecnico() && !tecnicoDeLaOferta) botones.push(`<p class="nota">La oferta es para ${esc(s.tecnicoNombre)}. Elegilo arriba en "Soy el técnico" para responderla.</p>`);
+            if (puedeTecnico() && !tecnicoDeLaOferta) botones.push(`<p class="nota">La oferta es para ${esc(s.tecnicoNombre)}: solo esa persona puede responderla.</p>`);
             if (puedeCliente()) botones.push(b("cancelar", "Cancelar", "peligro"));
             break;
         case "ASIGNADA":
@@ -417,7 +412,7 @@ async function vistaNueva() {
     const local = new Date(manana.getTime() - manana.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
     const campoCliente = esAdmin()
         ? `<select id="n-cliente">${clientes.map(c => `<option value="${c.id}">${c.id} · ${esc(c.nombre)} ${esc(c.apellido)} (${esc(c.barrio ?? "")})</option>`).join("")}</select>`
-        : `<input id="n-cliente" type="number" min="1" value="${estado.clienteActual}" required>`;
+        : `<input id="n-cliente" type="hidden" value="${estado.clienteActual}"><strong>nº ${estado.clienteActual}</strong>`;
     $("#contenido").innerHTML = `
       <section class="panel">
         <h2>Nueva solicitud de servicio</h2>
@@ -451,7 +446,6 @@ async function vistaNueva() {
             $("#n-cliente-nombre").textContent = `${c.nombre} ${c.apellido} · ${c.calle}, ${c.barrio ?? ""}`;
         } catch { $("#n-cliente-nombre").textContent = ""; }
     };
-    $("#n-cliente").addEventListener("change", mostrarNombre);
     mostrarNombre();
     $("#form-nueva").addEventListener("submit", async e => {
         e.preventDefault();
@@ -469,7 +463,6 @@ async function vistaNueva() {
         };
         try {
             const creada = await api("POST", "/api/v1/solicitudes", cuerpo);
-            if (!esAdmin()) { estado.clienteActual = creada.clienteId; guardar("patito.clienteActual", creada.clienteId); }
             aviso(`Solicitud #${creada.id} creada`, creada.estado === "OFERTADA"
                 ? `Se ofertó automáticamente a ${creada.tecnicoNombre}` : `Estado ${creada.estado}`);
             estado.seleccionada = creada;
@@ -479,7 +472,170 @@ async function vistaNueva() {
     });
 }
 
-// ------------------------------------------------------------------ Técnicos y clientes
+// ------------------------------------------------------------------ Mis datos
+
+/** El cliente ve y corrige SOLO su propio registro (GET y PUT /api/v1/clientes/{su id}). */
+async function vistaMisDatosCliente() {
+    let c;
+    try { c = await api("GET", `/api/v1/clientes/${estado.clienteActual}`); } catch { return; }
+    const campo = (id, etiqueta, valor, tipo = "text", extra = "") =>
+        `<div class="campo"><label for="${id}">${etiqueta}</label><input id="${id}" type="${tipo}" value="${esc(valor ?? "")}" ${extra}></div>`;
+    $("#contenido").innerHTML = `
+      <section class="panel">
+        <h2>Mis datos</h2>
+        <p class="ayuda">Tus datos de cliente nº ${c.id}. Si cambiás el domicilio, las solicitudes ya creadas conservan el anterior (snapshot).</p>
+        <form id="form-datos" class="formulario">
+          ${campo("d-nombre", "Nombre", c.nombre, "text", "required")}
+          ${campo("d-apellido", "Apellido", c.apellido, "text", "required")}
+          ${campo("d-dni", "DNI", c.dni, "text", 'required pattern="\\d{7,8}"')}
+          ${campo("d-calle", "Calle", c.calle, "text", "required")}
+          ${campo("d-barrio", "Barrio", c.barrio)}
+          ${campo("d-lat", "Latitud", c.latitud, "number", 'step="any" required')}
+          ${campo("d-lon", "Longitud", c.longitud, "number", 'step="any" required')}
+          <div class="campo ancho"><button class="btn" type="submit">Guardar cambios</button></div>
+        </form>
+      </section>`;
+    $("#form-datos").addEventListener("submit", async e => {
+        e.preventDefault();
+        try {
+            await api("PUT", `/api/v1/clientes/${estado.clienteActual}`, {
+                nombre: $("#d-nombre").value, apellido: $("#d-apellido").value, dni: $("#d-dni").value,
+                calle: $("#d-calle").value, barrio: $("#d-barrio").value,
+                latitud: Number($("#d-lat").value), longitud: Number($("#d-lon").value),
+            });
+            aviso("Datos actualizados");
+        } catch { /* aviso ya mostrado */ }
+    });
+}
+
+/** El técnico ve SOLO su perfil y puede cambiar su disponibilidad. */
+async function vistaMisDatosTecnico() {
+    let t;
+    try { t = await api("GET", `/api/v1/tecnicos/${estado.tecnicoActual}`); } catch { return; }
+    const dato = (titulo, valor) => `<div><dt>${titulo}</dt><dd>${valor}</dd></div>`;
+    $("#contenido").innerHTML = `
+      <section class="panel">
+        <h2>Mis datos</h2>
+        <dl class="datos">
+          ${dato("Nombre", `${esc(t.nombre)} ${esc(t.apellido)}`)}
+          ${dato("Legajo", esc(t.legajo))}
+          ${dato("DNI", esc(t.dni))}
+          ${dato("Base", `${t.latitud}, ${t.longitud}`)}
+          ${dato("Certificaciones", esc(t.certificaciones.map(c => c.nombre).join(", ")))}
+          ${dato("Zonas", esc(t.zonas.map(z => z.nombre).join(", ") || "—"))}
+        </dl>
+        <div class="acciones">
+          <p class="nota">Disponible: <strong>${t.disponible ? "Sí" : "No"}</strong>. Si no estás disponible, no recibís ofertas.</p>
+          <button type="button" class="btn ${t.disponible ? "secundario" : "ok"}" id="btn-disponible">
+            ${t.disponible ? "Marcarme como no disponible" : "Marcarme como disponible"}</button>
+        </div>
+      </section>`;
+    $("#btn-disponible").addEventListener("click", async () => {
+        try {
+            await api("PATCH", `/api/v1/tecnicos/${t.id}/disponibilidad`, { disponible: !t.disponible });
+            aviso("Disponibilidad actualizada");
+            vistaMisDatosTecnico();
+        } catch { /* aviso ya mostrado */ }
+    });
+}
+
+// ------------------------------------------------------------------ Informe (solo administrador)
+
+const NOMBRES = {
+    PENDIENTE: "Pendiente", OFERTADA: "Ofertada", ASIGNADA: "Asignada", EN_CURSO: "En curso",
+    REPROGRAMADA: "Reprogramada", DERIVADA: "Derivada", CANCELADA: "Cancelada", FINALIZADA: "Finalizada",
+    AUTOMATICA: "Automática", MANUAL: "Manual", NORMAL: "Normal", URGENTE: "Urgente",
+    REPARACION: "Reparación", INSTALACION: "Instalación", MANTENIMIENTO: "Mantenimiento",
+    ESTANDAR: "Estándar", PRIORIDAD: "Prioridad", FUERA_HORARIO: "Fuera de horario", COMBINADA: "Combinada",
+};
+const nombre = clave => NOMBRES[clave] ?? clave;
+
+/**
+ * Gráfico de barras horizontales de UNA sola serie (un solo color): cada fila es etiqueta, barra y valor.
+ * El valor va escrito al lado (no depende del color) y el title muestra el detalle al pasar el mouse.
+ */
+function barras(titulo, filas, formato = v => v) {
+    const max = Math.max(1, ...filas.map(f => f.valor));
+    const total = filas.reduce((a, f) => a + f.valor, 0);
+    return `<figure class="grafico">
+      <figcaption>${esc(titulo)}</figcaption>
+      ${filas.map(f => {
+        const porcentaje = total ? Math.round(f.valor * 100 / total) : 0;
+        const detalle = `${f.etiqueta}: ${formato(f.valor)}${f.extra ? " · " + f.extra : ""} (${porcentaje} %)`;
+        return `<div class="barra-fila" title="${esc(detalle)}">
+          <span class="barra-etiqueta">${esc(f.etiqueta)}</span>
+          <span class="barra-pista"><span class="grafico-barra" style="width:${f.valor ? Math.max(2, f.valor * 100 / max) : 0}%"></span></span>
+          <span class="barra-valor">${esc(formato(f.valor))}${f.extra ? `<small> · ${esc(f.extra)}</small>` : ""}</span>
+        </div>`;
+      }).join("")}
+    </figure>`;
+}
+
+async function vistaInforme(desde = "", hasta = "") {
+    $("#contenido").innerHTML = `
+      <section class="panel">
+        <div class="cabecera">
+          <h2>Informe de gestión</h2>
+          <form id="form-informe" class="filtros no-imprimir">
+            <label>Desde <input id="i-desde" type="date" value="${esc(desde)}"></label>
+            <label>Hasta <input id="i-hasta" type="date" value="${esc(hasta)}"></label>
+            <button class="btn" type="submit">Generar</button>
+            <button class="btn secundario" type="button" id="i-imprimir">Imprimir / PDF</button>
+          </form>
+        </div>
+        <div id="informe"><p class="ayuda">Generando…</p></div>
+      </section>`;
+    $("#form-informe").addEventListener("submit", e => { e.preventDefault(); vistaInforme($("#i-desde").value, $("#i-hasta").value); });
+    $("#i-imprimir").addEventListener("click", () => window.print());
+
+    const parametros = new URLSearchParams();
+    if (desde) parametros.set("desde", desde);
+    if (hasta) parametros.set("hasta", hasta);
+    let r;
+    try { r = await api("GET", `/api/v1/solicitudes/informe?${parametros}`); } catch { $("#informe").innerHTML = ""; return; }
+
+    const periodo = r.desde || r.hasta ? `del ${r.desde ?? "inicio"} al ${r.hasta ?? "hoy"}` : "de todo el período";
+    const aFilas = mapa => Object.entries(mapa).map(([clave, valor]) => ({ etiqueta: nombre(clave), valor }));
+    const o = r.ofertas, f = r.facturacion;
+    const tile = (titulo, valor, pie = "") =>
+        `<div class="kpi"><span>${esc(titulo)}</span><strong>${valor}</strong>${pie ? `<small>${esc(pie)}</small>` : ""}</div>`;
+
+    $("#informe").innerHTML = `
+      <p class="ayuda">Solicitudes creadas ${esc(periodo)} · generado ${fecha(r.generado)}. Pasá el mouse por una barra para ver el detalle.</p>
+      <div class="kpis">
+        ${tile("Solicitudes", r.totalSolicitudes)}
+        ${tile("Finalizadas", f.finalizadas, r.totalSolicitudes ? `${Math.round(f.finalizadas * 100 / r.totalSolicitudes)} % del total` : "")}
+        ${tile("Facturado", pesos(f.total), `visitas ${pesos(f.visitas)} + presupuestos ${pesos(f.presupuestos)}`)}
+        ${tile("Ticket promedio", pesos(f.ticketPromedio), "por trabajo finalizado")}
+        ${tile("Ofertas aceptadas", o.tasaAceptacion == null ? "—" : `${o.tasaAceptacion} %`, `${o.aceptadas} de ${o.enviadas} enviadas`)}
+        ${tile("Distancia promedio", r.distanciaPromedioKm == null ? "—" : `${r.distanciaPromedioKm} km`, "de las visitas asignadas")}
+      </div>
+      <div class="graficos">
+        ${barras("Solicitudes por estado", aFilas(r.porEstado))}
+        ${barras("Qué pasó con las ofertas (RN-3)", [
+            { etiqueta: "Enviadas", valor: o.enviadas },
+            { etiqueta: "Aceptadas", valor: o.aceptadas },
+            { etiqueta: "Rechazadas", valor: o.rechazadas },
+            { etiqueta: "Vencidas (15 min)", valor: o.vencidas },
+            { etiqueta: "Canceladas", valor: o.canceladas }])}
+        ${barras("Estrategias de costo usadas (RN-11)", r.porEstrategia.length
+            ? r.porEstrategia.map(e => ({ etiqueta: nombre(e.estrategia), valor: e.cantidad, extra: pesos(e.totalVisitas) }))
+            : [{ etiqueta: "Sin visitas con costo", valor: 0 }])}
+        ${barras("Tipos de servicio pedidos", aFilas(r.porTipoServicio))}
+        ${barras("Modo de asignación", aFilas(r.porModo))}
+        ${barras("Prioridad", aFilas(r.porPrioridad))}
+      </div>
+      <h3>Desempeño por técnico</h3>
+      ${r.porTecnico.length ? `<div class="tabla-scroll"><table class="tabla-informe">
+        <thead><tr><th>Técnico</th><th class="num">En espera</th><th class="num">En curso</th><th class="num">Finalizadas</th>
+          <th class="num" title="Ofertas que rechazó, dejó vencer o derivó">Descartadas</th><th class="num">Facturado</th></tr></thead>
+        <tbody>${r.porTecnico.map(t => `
+          <tr class="sin-clic"><td>${esc(t.tecnicoNombre)}</td><td class="num">${t.enEspera}</td><td class="num">${t.enCurso}</td>
+          <td class="num">${t.finalizadas}</td><td class="num">${t.descartadas}</td><td class="num">${pesos(t.facturado)}</td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="vacio">Ningún técnico tuvo solicitudes en el período.</p>`}`;
+}
+
+// ------------------------------------------------------------------ Técnicos y clientes (solo administrador)
 
 async function vistaTecnicos() {
     try { estado.tecnicos = (await api("GET", "/api/v1/tecnicos?size=100")).content; } catch { return; }
@@ -495,7 +651,7 @@ async function vistaTecnicos() {
               <td>${esc(t.certificaciones.map(c => c.nombre).join(", "))}</td>
               <td>${esc(t.zonas.map(z => z.nombre).join(", ") || "—")}</td>
               <td class="num">${t.latitud}, ${t.longitud}</td>
-              <td>${puedeTecnico()
+              <td>${esAdmin()
                 ? `<button type="button" class="btn chico ${t.disponible ? "ok" : "secundario"}" data-tecnico="${t.id}" data-disponible="${t.disponible}">${t.disponible ? "Sí" : "No"}</button>`
                 : (t.disponible ? "Sí" : "No")}</td>
             </tr>`).join("")}

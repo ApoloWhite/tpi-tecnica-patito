@@ -12,6 +12,7 @@
     --ok: #23864f;
     --sombra: 0 1px 3px rgba(20, 30, 50, .08);
     --radio: 10px;
+    --serie: #3a6fd8;          /* color único de las barras del informe */
 
     --e-pendiente: #8a6d00;   --e-pendiente-bg: #fff4cc;
     --e-ofertada: #7a3fc0;    --e-ofertada-bg: #f0e6fc;
@@ -33,6 +34,7 @@
         --primario: #6b8ff0;
         --primario-texto: #0d1220;
         --sombra: none;
+        --serie: #5f8ae8;
         --e-pendiente: #f2cf5b;   --e-pendiente-bg: #3a3112;
         --e-ofertada: #c9a3f5;    --e-ofertada-bg: #31224a;
         --e-asignada: #8db4f7;    --e-asignada-bg: #1c2c48;
@@ -210,3 +212,32 @@ fieldset label { font-weight: 400; display: inline-flex; gap: 6px; margin-right:
 .aviso.error { border-left-color: var(--peligro); }
 .aviso strong { display: block; }
 .aviso small { color: var(--suave); display: block; margin-top: 4px; overflow-wrap: anywhere; }
+
+/* ---------- Informe ---------- */
+.kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.kpi { border: 1px solid var(--borde); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.kpi span { font-size: 12px; color: var(--suave); }
+.kpi strong { font-size: 24px; font-variant-numeric: tabular-nums; }
+.kpi small { font-size: 12px; color: var(--suave); }
+
+.graficos { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px 28px; margin-bottom: 8px; }
+.grafico { margin: 0; }
+.grafico figcaption { font-weight: 600; margin-bottom: 10px; }
+.barra-fila { display: grid; grid-template-columns: 130px 1fr auto; align-items: center; gap: 10px; padding: 3px 0; border-radius: 6px; }
+.barra-fila:hover { background: var(--fondo); }
+.barra-etiqueta { font-size: 13px; color: var(--suave); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.barra-pista { height: 14px; position: relative; border-left: 1px solid var(--borde); }
+.grafico-barra { display: block; height: 100%; background: var(--serie); border-radius: 0 4px 4px 0; }
+.tabla-informe .num { text-align: right; }
+.barra-valor { font-size: 13px; font-variant-numeric: tabular-nums; min-width: 2ch; text-align: right; }
+.barra-valor small { color: var(--suave); }
+tbody tr.sin-clic { cursor: default; }
+
+@media print {
+    .barra-fila, .kpi, table { break-inside: avoid; }
+    .grafico-barra { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    header.barra, .no-imprimir, .avisos { display: none !important; }
+    body { background: #fff; }
+    main { padding: 0; }
+    .panel { border: 0; box-shadow: none; }
+}

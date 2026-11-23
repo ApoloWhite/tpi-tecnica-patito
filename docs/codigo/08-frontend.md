@@ -180,30 +180,17 @@ const estado = {
     tecnicos: [],
     solicitudes: [],
     filtroEstado: "",
-    soloMias: true,
     seleccionada: null,
     historial: [],
     candidatos: null,
-    clienteActual: Number(leer("patito.clienteActual", "1")),
-    tecnicoActual: Number(leer("patito.tecnicoActual", "1")),
+    clienteActual: null,   // sale del token (claim clienteId)
+    tecnicoActual: null,   // sale del token (claim tecnicoId)
 };
 ```
 - La **memoria** de la página: qué roles tenés, qué pestaña está abierta, qué solicitud elegiste, etc.
-- `clienteActual` y `tecnicoActual` se recuerdan en el `localStorage` del navegador (ver abajo), así no tenés que elegirlos cada vez.
+- `clienteActual` y `tecnicoActual`: **quién sos en el padrón**. Arrancan vacíos y se llenan con lo que dice el token al iniciar sesión (ver el punto 4). No se pueden elegir ni cambiar desde la página.
 
 ### 2. Utilidades
-
-```javascript
-function leer(clave, porDefecto) {
-    try { return localStorage.getItem(clave) ?? porDefecto; } catch { return porDefecto; }
-}
-function guardar(clave, valor) {
-    try { localStorage.setItem(clave, String(valor)); } catch { /* sin almacenamiento: no pasa nada */ }
-}
-```
-- `localStorage`: un "cajoncito" del navegador que recuerda datos entre visitas.
-- Está envuelto en `try/catch` porque en modo incógnito puede no estar disponible; en ese caso se usa el valor por defecto.
-- `??`: "si lo de la izquierda es `null` o `undefined`, usá lo de la derecha".
 
 ```javascript
 function esc(valor) {
@@ -219,6 +206,8 @@ const tiene = rol => estado.roles.includes(rol);
 const esAdmin = () => tiene("ADMINISTRADOR");
 const puedeCliente = () => esAdmin() || tiene("CLIENTE");
 const puedeTecnico = () => esAdmin() || tiene("TECNICO");
+const esSoloCliente = () => tiene("CLIENTE") && !esAdmin();
+const esSoloTecnico = () => tiene("TECNICO") && !esAdmin();
 const pesos = n => n == null ? "—" : Number(n).toLocaleString("es-AR", { style: "currency", currency: "ARS" });
 const fecha = f => f ? new Date(f).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" }) : "—";
 const chipEstado = e => `<span class="chip estado ${esc(e)}">${esc(e.replace("_", " "))}</span>`;
@@ -226,6 +215,7 @@ const chipEstado = e => `<span class="chip estado ${esc(e)}">${esc(e.replace("_"
 - Funciones flecha de una línea:
   - `$("#id")`: atajo para buscar un elemento de la página;
   - `tiene(rol)`, `esAdmin()`, `puedeCliente()`, `puedeTecnico()`: preguntas sobre tus roles, para decidir qué botones mostrar;
+  - `esSoloCliente()` / `esSoloTecnico()`: "soy cliente (o técnico) y **no** administrador". Con estas se decide que veas solo lo tuyo;
   - `pesos(1500)` → `$ 1.500,00` (formato argentino);
   - `fecha(...)` → `22/11/26, 10:56`;
   - `chipEstado("EN_CURSO")` → una etiqueta de color con el estado.
@@ -319,6 +309,22 @@ async function iniciar() {
 - El botón **Salir** cierra la sesión en Keycloak y vuelve a la página.
 
 ```javascript
+    estado.clienteActual = keycloak.tokenParsed?.clienteId ?? null;
+    estado.tecnicoActual = keycloak.tokenParsed?.tecnicoId ?? null;
+    if ((esSoloCliente() && estado.clienteActual == null) || (esSoloTecnico() && estado.tecnicoActual == null)) {
+        $("#contenido").innerHTML = `<div class="panel"><h2>Tu usuario no está vinculado al padrón</h2> ...`;
+        return;
+    }
+```
+- **Quién sos en el padrón** sale del token: Keycloak agrega los claims `clienteId` (en `cliente1` vale 1) y `tecnicoId` (en `tecnico1` vale 1 y en `tecnico2` vale 2). Ver el documento 07, sección del realm.
+- Si un cliente o un técnico no tiene ese dato, la página no sigue: muestra un aviso en vez de enseñar datos de otro.
+
+```javascript
+        if (esAdmin()) estado.tecnicos = (await api("GET", "/api/v1/tecnicos?size=100")).content;
+```
+- La lista completa de técnicos se pide **solo si sos administrador**. El cliente nunca la descarga.
+
+```javascript
     try {
         const certs = await api("GET", "/api/v1/certificaciones");
         certs.forEach(c => estado.certificaciones.set(c.id, c.nombre));
@@ -338,16 +344,20 @@ async function iniciar() {
 
 ```javascript
 function dibujarPestanias() {
-    const pestanias = [["solicitudes", "Solicitudes"]];
+    const titulo = esSoloCliente() ? "Mis solicitudes" : esSoloTecnico() ? "Mis trabajos" : "Solicitudes";
+    const pestanias = [["solicitudes", titulo]];
     if (puedeCliente()) pestanias.push(["nueva", "Nueva solicitud"]);
-    pestanias.push(["tecnicos", "Técnicos"]);
-    if (esAdmin()) pestanias.push(["clientes", "Clientes"]);
+    if (esSoloCliente() || esSoloTecnico()) pestanias.push(["mis-datos", "Mis datos"]);
+    if (esAdmin()) pestanias.push(["tecnicos", "Técnicos"], ["clientes", "Clientes"]);
     $("#pestanias").innerHTML = pestanias.map(([id, texto]) =>
         `<button type="button" data-pestania="${id}" ${estado.pestania === id ? 'aria-current="page"' : ""}>${texto}</button>`).join("");
     $("#pestanias").querySelectorAll("button").forEach(b => b.addEventListener("click", () => mostrar(b.dataset.pestania)));
 }
 ```
-- Arma la lista de pestañas **según el rol**: "Nueva solicitud" solo para cliente o admin, "Clientes" solo para el admin.
+- Arma la lista de pestañas **según el rol**:
+  - **cliente**: "Mis solicitudes", "Nueva solicitud" y "Mis datos". **No** ve la pestaña de técnicos;
+  - **técnico**: "Mis trabajos" y "Mis datos";
+  - **administrador**: "Solicitudes", "Nueva solicitud", "Técnicos" y "Clientes".
 - `.map(...).join("")`: convierte cada pestaña en un `<button>` y los junta en un texto HTML.
 - `data-pestania="..."`: un dato guardado en el botón, que se lee con `b.dataset.pestania`.
 - `addEventListener("click", ...)`: "cuando hagan clic, ejecutá esto".
@@ -374,14 +384,15 @@ async function cargarSolicitudes(silencioso = false) {
         pagina = await api("GET", `/api/v1/solicitudes?size=50&sort=id,desc${filtro}`);
     } catch { return; }
     let lista = pagina.content;
-    if (!esAdmin() && estado.soloMias) {
-        if (tiene("TECNICO")) lista = lista.filter(s => s.tecnicoId === estado.tecnicoActual);
-        else if (tiene("CLIENTE")) lista = lista.filter(s => s.clienteId === estado.clienteActual);
-    }
+    if (esSoloCliente()) lista = lista.filter(s => s.clienteId === estado.clienteActual);
+    else if (esSoloTecnico()) lista = lista.filter(s => s.tecnicoId === estado.tecnicoActual);
 ```
 - Pide las últimas 50 solicitudes (las más nuevas primero) con el filtro de estado.
-- "Solo las mías": el técnico ve las suyas y el cliente las suyas.
-- **Simplificación de la demo:** en Keycloak, `cliente1` y `tecnico1` no están vinculados a un cliente o técnico del padrón. Por eso la página te deja elegir "Soy el técnico…" o "Soy el cliente nº…", y filtra en el navegador.
+- **Cada uno ve lo suyo, siempre** (no hay casilla para desactivarlo):
+  - el cliente, las solicitudes con **su** `clienteId`;
+  - el técnico, las que hoy están a **su** nombre (`tecnicoId`). Si rechaza una oferta, desaparece de su lista porque pasa a otro;
+  - el administrador, todas.
+- El filtro se hace **en el navegador** con los números que vienen del token. La API sigue devolviendo todas las solicitudes a cualquier rol (así quedó en el PDF); para que el backend también filtre habría que cambiar ms-solicitudes.
 
 Después arma la tabla con un `<tr>` por solicitud. Al hacer clic en una fila, llama a `cargarDetalle(id)`.
 
@@ -516,9 +527,82 @@ async function vistaNueva() {
   - `+ ":00"`: agrega los segundos, porque el backend espera `HH:mm:ss`.
 - Si quedó **OFERTADA** apenas creada, es que la **oferta automática** ya eligió técnico, y el aviso lo dice.
 
-### 9. Técnicos y clientes
+### 9. Mis datos
 
-- `vistaTecnicos()`: la tabla de técnicos. Para técnico o admin, la columna "Disponible" es un botón que hace `PATCH /api/v1/tecnicos/{id}/disponibilidad` con el valor contrario.
+```javascript
+async function vistaMisDatosCliente() {
+    let c;
+    try { c = await api("GET", `/api/v1/clientes/${estado.clienteActual}`); } catch { return; }
+    ...
+    $("#form-datos").addEventListener("submit", async e => {
+        e.preventDefault();
+        await api("PUT", `/api/v1/clientes/${estado.clienteActual}`, { nombre: ..., calle: ..., latitud: ..., ... });
+        aviso("Datos actualizados");
+    });
+}
+```
+- El cliente ve **solo su** registro (`GET /api/v1/clientes/{su número}`) en un formulario y puede corregirlo con `PUT`.
+- El número sale del token, no de la URL de la página: no puede pedir el de otro.
+
+```javascript
+async function vistaMisDatosTecnico() {
+    let t;
+    try { t = await api("GET", `/api/v1/tecnicos/${estado.tecnicoActual}`); } catch { return; }
+    ... botón que hace PATCH /api/v1/tecnicos/{id}/disponibilidad con !t.disponible
+}
+```
+- El técnico ve **su** perfil (legajo, base, certificaciones y zonas) y un botón para marcarse disponible o no disponible.
+
+### 10. El informe (solo administrador)
+
+```javascript
+function barras(titulo, filas, formato = v => v) {
+    const max = Math.max(1, ...filas.map(f => f.valor));
+    const total = filas.reduce((a, f) => a + f.valor, 0);
+    return `<figure class="grafico">
+      <figcaption>${esc(titulo)}</figcaption>
+      ${filas.map(f => { ...
+        return `<div class="barra-fila" title="${esc(detalle)}">
+          <span class="barra-etiqueta">${esc(f.etiqueta)}</span>
+          <span class="barra-pista"><span class="grafico-barra" style="width:${f.valor ? Math.max(2, f.valor * 100 / max) : 0}%"></span></span>
+          <span class="barra-valor">${esc(formato(f.valor))}...</span>
+        </div>`;
+      }).join("")}
+    </figure>`;
+}
+```
+- Un **gráfico de barras horizontales hecho con HTML y CSS**, sin librerías. Cada fila tiene la etiqueta, la barra y el valor escrito.
+- El **ancho** de cada barra es su valor dividido por el **máximo**, en porcentaje: la más grande ocupa el 100 %. `Math.max(1, ...)` evita dividir por cero si todo es 0. Una barra en 0 queda vacía y una muy chica se ve al menos con un 2 %.
+- `reduce((a, f) => a + f.valor, 0)`: suma todos los valores (para el porcentaje).
+- `title="..."`: al pasar el mouse muestra el detalle ("Cancelada: 6 (67 %)").
+- **Un solo color** (`--serie`) para todas las barras, porque cada gráfico es una sola serie: el color no significa nada, lo importante es el largo y el número escrito. El azul está validado para que se vea bien en modo claro y oscuro.
+- `<figure>` y `<figcaption>`: las etiquetas HTML correctas para "un gráfico con su título".
+
+```javascript
+async function vistaInforme(desde = "", hasta = "") {
+    ...
+    const parametros = new URLSearchParams();
+    if (desde) parametros.set("desde", desde);
+    if (hasta) parametros.set("hasta", hasta);
+    let r;
+    try { r = await api("GET", `/api/v1/solicitudes/informe?${parametros}`); } catch { ...; return; }
+```
+- Arma la URL con las fechas elegidas. `URLSearchParams` escribe `desde=2026-11-01&hasta=...` bien codificado.
+
+```javascript
+    const tile = (titulo, valor, pie = "") =>
+        `<div class="kpi"><span>${esc(titulo)}</span><strong>${valor}</strong>${pie ? `<small>${esc(pie)}</small>` : ""}</div>`;
+```
+- Las **tarjetas de números grandes** (KPI = indicador clave): título, número y una aclaración debajo.
+
+```javascript
+    $("#i-imprimir").addEventListener("click", () => window.print());
+```
+- **Imprimir / PDF**: abre el diálogo de impresión del navegador (ahí se puede elegir "Guardar como PDF"). En `styles.css`, `@media print { ... }` esconde la barra superior y los botones, y evita que una tarjeta o una barra quede cortada entre dos hojas (`break-inside: avoid`).
+
+### 11. Técnicos y clientes (solo administrador)
+
+- `vistaTecnicos()`: la tabla de todos los técnicos. La columna "Disponible" es un botón que hace `PATCH /api/v1/tecnicos/{id}/disponibilidad` con el valor contrario.
 - `vistaClientes()`: la tabla de clientes (solo admin, porque `GET /api/v1/clientes` es solo para ADMINISTRADOR).
 
 ```javascript

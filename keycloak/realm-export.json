@@ -44,7 +44,39 @@
       "attributes": {
         "post.logout.redirect.uris": "+",
         "pkce.code.challenge.method": "S256"
-      }
+      },
+      "protocolMappers": [
+        {
+          "name": "clienteId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "clienteId",
+            "claim.name": "clienteId",
+            "jsonType.label": "long",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        },
+        {
+          "name": "tecnicoId",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "tecnicoId",
+            "claim.name": "tecnicoId",
+            "jsonType.label": "long",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "introspection.token.claim": "true"
+          }
+        }
+      ]
     },
     {
       "clientId": "ms-solicitudes",
@@ -94,14 +126,19 @@
       ],
       "realmRoles": [
         "CLIENTE"
-      ]
+      ],
+      "attributes": {
+        "clienteId": [
+          "1"
+        ]
+      }
     },
     {
       "username": "tecnico1",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Tomas",
-      "lastName": "Tecnico",
+      "firstName": "Juan",
+      "lastName": "Pérez",
       "email": "tecnico1@patito.com",
       "credentials": [
         {
@@ -112,7 +149,35 @@
       ],
       "realmRoles": [
         "TECNICO"
-      ]
+      ],
+      "attributes": {
+        "tecnicoId": [
+          "1"
+        ]
+      }
+    },
+    {
+      "username": "tecnico2",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Ana",
+      "lastName": "Gómez",
+      "email": "tecnico2@patito.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "tecnico123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "TECNICO"
+      ],
+      "attributes": {
+        "tecnicoId": [
+          "2"
+        ]
+      }
     },
     {
       "username": "service-account-ms-solicitudes",
@@ -122,5 +187,18 @@
         "SISTEMA"
       ]
     }
-  ]
+  ],
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [
+      {
+        "providerId": "declarative-user-profile",
+        "subComponents": {},
+        "config": {
+          "kc.user.profile.config": [
+            "{\"attributes\": [{\"name\": \"username\", \"displayName\": \"${username}\", \"validations\": {\"length\": {\"min\": 3, \"max\": 255}, \"username-prohibited-characters\": {}, \"up-username-not-idn-homograph\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"email\", \"displayName\": \"${email}\", \"validations\": {\"email\": {}, \"length\": {\"max\": 255}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"firstName\", \"displayName\": \"${firstName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"lastName\", \"displayName\": \"${lastName}\", \"validations\": {\"length\": {\"max\": 255}, \"person-name-prohibited-characters\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\", \"user\"]}, \"multivalued\": false}, {\"name\": \"clienteId\", \"displayName\": \"Id del cliente en ms-clientes\", \"validations\": {\"integer\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}, {\"name\": \"tecnicoId\", \"displayName\": \"Id del t\\u00e9cnico en ms-tecnicos\", \"validations\": {\"integer\": {}}, \"permissions\": {\"view\": [\"admin\", \"user\"], \"edit\": [\"admin\"]}, \"multivalued\": false}], \"groups\": [{\"name\": \"user-metadata\", \"displayHeader\": \"User metadata\", \"displayDescription\": \"Attributes, which refer to user metadata\"}]}"
+          ]
+        }
+      }
+    ]
+  }
 }

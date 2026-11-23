@@ -1210,6 +1210,141 @@ public class SolicitudService {
 
 ---
 
+## 9 bis. El informe del administrador (`InformeService`)
+
+**Qué hace:** junta números de **todas** las solicitudes para que el administrador vea cómo viene la operatoria: cuántas hay en cada estado, cuánto se facturó, qué pasó con las ofertas y cómo le va a cada técnico.
+
+**La idea clave:** no se traen las solicitudes una por una para contarlas en Java (con 10 000 solicitudes sería lentísimo). Se le pide a la **base de datos** que cuente y sume, con consultas **agregadas** (`count`, `sum`, `avg`, `group by`), y se recibe solo el resultado.
+
+### Las consultas (en `SolicitudRepository`)
+
+```java
+@Query("select s.estado, count(s) from Solicitud s where s.fechaCreacion between :desde and :hasta group by s.estado")
+List<Object[]> contarPorEstado(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
+```
+- `group by s.estado`: "juntá las solicitudes por estado" y `count(s)`: "contá cuántas hay en cada grupo". Devuelve filas como `[FINALIZADA, 3]`, `[CANCELADA, 6]`.
+- `List<Object[]>`: cada fila es un arreglo de objetos (`fila[0]` el estado, `fila[1]` la cantidad), porque el resultado no es una entidad.
+- `between :desde and :hasta`: solo las creadas en el período.
+
+Las demás siguen la misma idea:
+
+| Consulta | Devuelve |
+|---|---|
+| `contarPorModo`, `contarPorPrioridad` | `[valor, cantidad]` |
+| `contarPorTipoServicio` | `select t, count(s) from Solicitud s join s.tiposServicio t ...`: el `join` "abre" la colección de tipos, así una solicitud con 2 tipos cuenta en los 2 |
+| `resumirPorEstrategia` | `[estrategia, cantidad, sum(total)]`. `coalesce(sum(...), 0)` = "si no hay nada para sumar, 0" (sin esto, `sum` da `null`) |
+| `resumirFinalizadas` | una sola fila: `[cantidad, suma visitas, suma presupuestos]` de las FINALIZADAS |
+| `distanciaPromedio` | `avg(s.distanciaKm)`: el promedio |
+| `resumirPorTecnico` | `[tecnicoId, nombre, estado, cantidad, sum(total), sum(presupuesto)]` agrupado por técnico **y** estado |
+| `contarDescartesPorTecnico` | `select d, count(s) ... join s.tecnicosDescartados d`: cuántas veces cada técnico rechazó, dejó vencer o derivó |
+| `HistorialEstadoRepository.contarTransiciones` | `[estadoAnterior, estadoNuevo, usuario, cantidad]`: cuántas veces pasó cada cambio de estado |
+
+### El service
+
+```java
+    @Transactional(readOnly = true)
+    public InformeResponse generar(LocalDate desde, LocalDate hasta) {
+        if (desde != null && hasta != null && desde.isAfter(hasta)) {
+            throw new ReglaNegocioException("La fecha 'desde' (...) no puede ser posterior a 'hasta' (...)");
+        }
+        LocalDateTime inicio = desde == null ? LocalDateTime.of(2000, 1, 1, 0, 0) : desde.atStartOfDay();
+        LocalDateTime fin = hasta == null ? LocalDateTime.of(2999, 12, 31, 23, 59) : hasta.atTime(LocalTime.MAX);
+```
+- Si las fechas están al revés → **422**.
+- Las fechas son **días** (`LocalDate`), pero la base guarda fecha **y hora**. `atStartOfDay()` = ese día a las 00:00 y `atTime(LocalTime.MAX)` = ese día a las 23:59:59.999…, así el último día se incluye **completo**.
+- Sin fechas, usa un rango enorme (todo).
+
+```java
+    private static Map<String, Long> conteos(List<Object[]> filas, Enum<?>[] todos) {
+        Map<String, Long> resultado = new LinkedHashMap<>();
+        for (Enum<?> valor : todos) {
+            resultado.put(valor.name(), 0L);
+        }
+        for (Object[] fila : filas) {
+            String clave = fila[0] == null ? ModoAsignacion.MANUAL.name() : ((Enum<?>) fila[0]).name();
+            resultado.merge(clave, (Long) fila[1], Long::sum);
+        }
+        return resultado;
+    }
+```
+- Primero pone **todos** los valores posibles en 0 (por ejemplo, los 8 estados). Así el informe muestra "REPROGRAMADA: 0" en vez de no mostrarla. `LinkedHashMap` mantiene ese orden.
+- Después pisa con lo que vino de la base. `merge(clave, cantidad, Long::sum)` = "sumale esta cantidad a lo que ya hay".
+- Las solicitudes viejas sin modo (`null`) se cuentan como MANUAL.
+
+```java
+    private InformeResponse.Ofertas ofertas(LocalDateTime inicio, LocalDateTime fin) {
+        ...
+            if (nuevo == OFERTADA) {
+                enviadas += cantidad;
+            } else if (anterior == OFERTADA && nuevo == ASIGNADA) {
+                aceptadas += cantidad;
+            } else if (anterior == OFERTADA && nuevo == PENDIENTE) {
+                if (sistema) { vencidas += cantidad; } else { rechazadas += cantidad; }
+            } else if (anterior == OFERTADA && nuevo == CANCELADA) {
+                canceladas += cantidad;
+            }
+        ...
+        Double tasa = enviadas == 0 ? null : redondear(aceptadas * 100.0 / enviadas);
+```
+- El **embudo de ofertas** se arma leyendo el **historial**, que tiene cada cambio de estado:
+  - entrar a OFERTADA = una oferta **enviada**;
+  - OFERTADA → ASIGNADA = **aceptada**;
+  - OFERTADA → PENDIENTE = rechazada o vencida. ¿Cómo se distinguen? Por **quién** lo hizo: si fue el usuario `sistema` (el reloj), **venció**; si fue un técnico, la **rechazó**;
+  - OFERTADA → CANCELADA = el cliente canceló con la oferta abierta.
+- La tasa de aceptación es aceptadas ÷ enviadas × 100. Si no hubo ofertas, es `null` (no se divide por cero).
+
+```java
+    private List<InformeResponse.Tecnico> tecnicos(LocalDateTime inicio, LocalDateTime fin) {
+        Map<Long, AcumuladoTecnico> acumulados = new TreeMap<>();
+        for (Object[] f : solicitudRepository.resumirPorTecnico(inicio, fin)) {
+            AcumuladoTecnico a = acumulados.computeIfAbsent((Long) f[0], id -> new AcumuladoTecnico());
+            ...
+        }
+        for (Object[] f : solicitudRepository.contarDescartesPorTecnico(inicio, fin)) { ... descartadas ... }
+        return acumulados.entrySet().stream().map(...).sorted(Comparator.comparing(InformeResponse.Tecnico::facturado).reversed()).toList();
+    }
+```
+- Une **dos** consultas en **una fila por técnico**. `computeIfAbsent(id, ...)` = "dame el acumulador de este técnico o creá uno nuevo si no existe".
+- Según el estado, suma en "en espera", "en curso" o "finalizadas" (y lo facturado).
+- Ordena del que más facturó al que menos.
+
+```java
+    private static BigDecimal dinero(Object valor) {
+        if (valor == null) return BigDecimal.ZERO.setScale(2);
+        BigDecimal numero = valor instanceof BigDecimal bd ? bd : new BigDecimal(valor.toString());
+        return numero.setScale(2, RoundingMode.HALF_UP);
+    }
+```
+- La base puede devolver la suma como `BigDecimal` u otro tipo numérico. Esto la normaliza siempre a `BigDecimal` con 2 decimales (plata exacta).
+
+### El endpoint
+
+```java
+    @GetMapping("/informe")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    public ResponseEntity<InformeResponse> informe(
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return ResponseEntity.ok(informeService.generar(desde, hasta));
+    }
+```
+- `GET /api/v1/solicitudes/informe?desde=2026-11-01&hasta=2026-11-30`, **solo ADMINISTRADOR** (cualquier otro rol → 403).
+- `@DateTimeFormat(iso = DATE)`: las fechas llegan como `AAAA-MM-DD`. Si mandan otra cosa (`?desde=ayer`) → **400**.
+- Va **antes** que `/{solicitudId}` en la clase, aunque Spring igual prefiere la ruta literal `/informe` sobre la variable.
+
+### `dtos/InformeResponse.java`
+
+Un record con **records anidados** (`Estrategia`, `Facturacion`, `Ofertas`, `Tecnico`), uno por sección. Así el JSON sale ordenado en bloques:
+
+```json
+{ "totalSolicitudes": 9, "porEstado": { "PENDIENTE": 0, ..., "FINALIZADA": 3 },
+  "facturacion": { "finalizadas": 3, "visitas": 17976.00, "presupuestos": 5800.00, "total": 23776.00, "ticketPromedio": 7925.33 },
+  "ofertas": { "enviadas": 8, "aceptadas": 5, "rechazadas": 3, "vencidas": 0, "canceladas": 0, "tasaAceptacion": 62.5 },
+  "porTecnico": [ { "tecnicoNombre": "Juan Pérez", "finalizadas": 2, "descartadas": 2, "facturado": 15452.00, ... } ], ... }
+```
+
+---
+
 ## 10. `services/OfertaScheduler.java`: el reloj
 
 ```java

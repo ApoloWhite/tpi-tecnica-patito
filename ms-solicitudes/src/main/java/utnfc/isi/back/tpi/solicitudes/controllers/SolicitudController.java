@@ -24,13 +24,18 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import utnfc.isi.back.tpi.solicitudes.dtos.ElegirRequest;
 import utnfc.isi.back.tpi.solicitudes.dtos.ElegirResponse;
 import utnfc.isi.back.tpi.solicitudes.dtos.HistorialResponse;
+import utnfc.isi.back.tpi.solicitudes.dtos.InformeResponse;
 import utnfc.isi.back.tpi.solicitudes.dtos.PresupuestoRequest;
 import utnfc.isi.back.tpi.solicitudes.dtos.SolicitudRequest;
 import utnfc.isi.back.tpi.solicitudes.dtos.SolicitudResponse;
 import utnfc.isi.back.tpi.solicitudes.models.EstadoSolicitud;
+import utnfc.isi.back.tpi.solicitudes.services.InformeService;
 import utnfc.isi.back.tpi.solicitudes.services.SolicitudService;
 
+import org.springframework.format.annotation.DateTimeFormat;
+
 import java.net.URI;
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -43,9 +48,11 @@ public class SolicitudController {
     private static final String ROLES_TECNICO = "hasAnyRole('ADMINISTRADOR','TECNICO')";
 
     private final SolicitudService solicitudService;
+    private final InformeService informeService;
 
-    public SolicitudController(SolicitudService solicitudService) {
+    public SolicitudController(SolicitudService solicitudService, InformeService informeService) {
         this.solicitudService = solicitudService;
+        this.informeService = informeService;
     }
 
     @PostMapping
@@ -73,6 +80,26 @@ public class SolicitudController {
             @RequestParam(required = false) EstadoSolicitud estado,
             @ParameterObject @PageableDefault(size = 20, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
         return ResponseEntity.ok(solicitudService.listar(estado, pageable));
+    }
+
+    @GetMapping("/informe")
+    @PreAuthorize("hasRole('ADMINISTRADOR')")
+    @Operation(summary = "Informe de gestión",
+            description = "Rol: ADMINISTRADOR. Cantidades por estado, modo, prioridad y tipo; uso de cada estrategia de costo; "
+                    + "facturación de las finalizadas; embudo de ofertas (enviadas, aceptadas, rechazadas, vencidas) "
+                    + "y desempeño por técnico. Filtra por fecha de creación (ambas fechas incluidas).")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Informe generado"),
+            @ApiResponse(responseCode = "400", description = "Fecha con formato inválido (usar AAAA-MM-DD)"),
+            @ApiResponse(responseCode = "403", description = "Solo el ADMINISTRADOR puede ver el informe"),
+            @ApiResponse(responseCode = "422", description = "'desde' es posterior a 'hasta'")
+    })
+    public ResponseEntity<InformeResponse> informe(
+            @Parameter(description = "Primer día incluido (AAAA-MM-DD)", example = "2026-11-01")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate desde,
+            @Parameter(description = "Último día incluido (AAAA-MM-DD)", example = "2026-11-30")
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate hasta) {
+        return ResponseEntity.ok(informeService.generar(desde, hasta));
     }
 
     @GetMapping("/{solicitudId}")

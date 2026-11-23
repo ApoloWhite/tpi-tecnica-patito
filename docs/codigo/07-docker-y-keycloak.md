@@ -434,14 +434,41 @@ MS_CLIENTES_PORT=47383
   "users": [
     { "username": "admin1", ..., "credentials": [{ "type": "password", "value": "admin123", "temporary": false }],
       "realmRoles": ["ADMINISTRADOR"] },
-    { "username": "cliente1", ..., "realmRoles": ["CLIENTE"] },
-    { "username": "tecnico1", ..., "realmRoles": ["TECNICO"] },
+    { "username": "cliente1", ..., "realmRoles": ["CLIENTE"], "attributes": { "clienteId": ["1"] } },
+    { "username": "tecnico1", ..., "realmRoles": ["TECNICO"], "attributes": { "tecnicoId": ["1"] } },
+    { "username": "tecnico2", ..., "realmRoles": ["TECNICO"], "attributes": { "tecnicoId": ["2"] } },
     { "username": "service-account-ms-solicitudes", "enabled": true,
       "serviceAccountClientId": "ms-solicitudes", "realmRoles": ["SISTEMA"] }
   ]
 }
 ```
-- Los 3 usuarios de prueba, con su contraseña (`temporary: false` = no hay que cambiarla al entrar) y su rol.
+- Los usuarios de prueba, con su contraseña (`temporary: false` = no hay que cambiarla al entrar) y su rol.
+- `attributes`: **a quién del padrón corresponde** cada usuario. `cliente1` es el cliente nº 1 (Carlos), `tecnico1` el técnico nº 1 (Juan) y `tecnico2` la técnica nº 2 (Ana). Así el frontend sabe qué mostrarle a cada uno.
 - `service-account-ms-solicitudes`: el **usuario especial** que Keycloak asocia a la cuenta de servicio (`serviceAccountClientId`). Así se le da el rol `SISTEMA`.
+
+### Cómo llegan `clienteId` y `tecnicoId` al token
+
+Hacen falta dos piezas más en el realm:
+
+```json
+  "components": {
+    "org.keycloak.userprofile.UserProfileProvider": [{
+      "providerId": "declarative-user-profile",
+      "config": { "kc.user.profile.config": ["{ \"attributes\": [ ...username, email, firstName, lastName..., {\"name\": \"clienteId\", \"validations\": {\"integer\": {}}, ...}, {\"name\": \"tecnicoId\", ...} ] }"] }
+    }]
+  },
+```
+- El **perfil de usuario**: la lista de datos que puede tener un usuario. Desde Keycloak 24, un atributo que **no** esté declarado acá se **descarta** al importar. Por eso se declaran `clienteId` y `tecnicoId` (números enteros, que solo el administrador puede editar), además de los cuatro de siempre.
+
+```json
+      "protocolMappers": [
+        { "name": "clienteId", "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "config": { "user.attribute": "clienteId", "claim.name": "clienteId", "jsonType.label": "long",
+                      "access.token.claim": "true", "id.token.claim": "true", ... } },
+        { "name": "tecnicoId", ... }
+      ]
+```
+- Dentro del client `bda-client`. Un **mapper** copia un dato del usuario adentro del token: "tomá el atributo `clienteId` del usuario y ponelo en el token como el claim `clienteId`, de tipo número".
+- Resultado: el token de `cliente1` trae `"clienteId": 1`, y el frontend lo lee con `keycloak.tokenParsed.clienteId`.
 
 > ⚠️ Keycloak en modo `start-dev` guarda todo **adentro del contenedor**. Si lo recreás (`docker compose down` + `up`, o `--force-recreate`), vuelve a importar este archivo. Por eso cualquier cambio permanente se hace en el JSON y no en la consola web.

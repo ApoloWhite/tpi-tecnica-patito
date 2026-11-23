@@ -119,7 +119,46 @@ Cada 30 segundos, **`OfertaScheduler`** se despierta (`@Scheduled`) y busca ofer
 
 ---
 
-## 3. Diccionario: las palabras raras explicadas fácil
+## 3. Patrones de diseño que usa el proyecto
+
+Un **patrón de diseño** es una "receta conocida" para un problema que aparece seguido. Usar el nombre del patrón permite explicar en una palabra cómo está resuelto algo. Estos son los del proyecto, de los más importantes a los más chicos:
+
+### Patrones de código (GoF y de Spring)
+
+| Patrón | Dónde | Explicado fácil |
+|---|---|---|
+| **Strategy** ⭐ | `ms-solicitudes/services/costos/`: `EstrategiaCosto` + `EstrategiaEstandar`, `EstrategiaPrioridad`, `EstrategiaFueraHorario`, `EstrategiaCombinada`; `CalculadoraCosto` elige | Varias "tarjetas de tarifa" con la misma forma; se elige una según la situación. Agregar una forma de cobrar nueva = agregar una clase, sin tocar las demás (RN-11) |
+| **Template Method** | El método `default calcular(...)` de `EstrategiaCosto` | El "esqueleto" del cálculo (base + recargo) está escrito una sola vez; cada estrategia solo completa el pedacito que cambia (`porcentajeRecargo`) |
+| **Máquina de estados** (variante tabla del patrón *State*) | `EstadoSolicitud`: el mapa `TRANSICIONES` + `puedePasarA(...)`; `SolicitudService.transicionar(...)` es el único lugar que cambia el estado | Un tablero que dice desde qué casillero se puede ir a cuál. Nadie se saltea estados (RN-7) |
+| **Repository** | Todas las interfaces `...Repository extends JpaRepository` | "La heladera": el resto del código pide datos sin saber cómo se guardan |
+| **DTO** (Data Transfer Object) | Carpeta `dtos/` de cada servicio | Las "bandejas" que entran y salen por la API, separadas de las entidades |
+| **Builder** | `@Builder` de Lombok: `Solicitud.builder().clienteId(1)...build()` | Armar un objeto con muchos campos de a uno, legible |
+| **Factory Method** (estático) | `ClienteResponse.desde(cliente)`, `SolicitudResponse.desde(...)`, `ServicioRemotoException.desde(...)` | Un método que "fabrica" un objeto a partir de otro |
+| **Dependency Injection** | Todos los constructores que reciben sus dependencias | Las clases piden sus herramientas en vez de fabricarlas; Spring se las da |
+| **Facade** | `ClientesClient`, `TecnicosClient` | Esconden todo lo complicado de HTTP, timeouts y reintentos detrás de un método simple: `obtener(id)` |
+| **Adapter** | `ReactiveJwtAuthenticationConverterAdapter` en el gateway; `GeoService` ↔ `OsrmGeoService` | Un "enchufe adaptador" entre dos formas incompatibles (MVC ↔ reactivo; nuestra interfaz ↔ la API de OSRM) |
+| **Chain of Responsibility** | Los filtros (`CorrelationIdFilter`, la cadena de Spring Security) y los interceptores de `RestClient` | Cada eslabón hace su parte y le pasa el pedido al siguiente (`chain.doFilter(...)`) |
+| **Proxy** | `@Transactional`, `@PreAuthorize`, `@Retry`, `@CircuitBreaker` (Spring envuelve el bean); nginx como *reverse proxy* | Un "intermediario" que hace algo antes y después de llamar al objeto real (abrir la transacción, revisar el rol, reintentar…) |
+| **Observer / Publish-Subscribe** *(no se usa)* | — | No hay eventos entre servicios: todo es REST sincrónico. Sería una mejora futura (por ejemplo, avisar al técnico con una cola de mensajes) |
+
+### Patrones de arquitectura de microservicios
+
+| Patrón | Dónde | Explicado fácil |
+|---|---|---|
+| **API Gateway** | `api-gateway` | Una sola puerta de entrada que revisa el token y reparte |
+| **Database per Service** | Una base H2 por microservicio | Cada sala tiene su propio cuaderno; nadie escribe en el de otro |
+| **Snapshot** (copia de datos) | `Solicitud` guarda nombre, domicilio y coordenadas del cliente | Una "foto" de los datos de otro servicio en el momento, para que no cambien después (RN-10) |
+| **Circuit Breaker + Retry** | `@CircuitBreaker` y `@Retry` de Resilience4j en los clientes REST | Reintentar una vez y, si un servicio falla mucho, "saltar la térmica" para no insistir |
+| **Fallback / Graceful degradation** | `OsrmGeoService` usa Haversine si OSRM falla; `sinServicio(...)` responde 503 | Un plan B en vez de romperse |
+| **Correlation ID** | `X-Correlation-ID` + MDC | El número de ticket que permite seguir un pedido por todos los servicios |
+| **Service Account** | Client `ms-solicitudes` con `client_credentials` | Una "pulsera de empleado" para que un servicio se identifique cuando no hay un usuario |
+| **Optimistic Locking** | `@Version` en `Solicitud` | Si dos cambian lo mismo a la vez, el segundo falla en vez de pisar al primero (RN-4) |
+| **Scheduler** | `OfertaScheduler` con `@Scheduled` | Una tarea que se despierta sola cada 30 s (RN-3) |
+| **Shared Library** | `commons-geo` (con auto-configuración de Spring Boot) | Código común en una librería, no copiado en cada servicio |
+
+---
+
+## 4. Diccionario: las palabras raras explicadas fácil
 
 ### Java y Spring
 

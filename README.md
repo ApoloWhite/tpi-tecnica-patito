@@ -11,6 +11,24 @@ Incluye un **frontend web** (http://localhost:47300) para usar el sistema con lo
 > - [Cómo funciona](docs/COMO-FUNCIONA.md): el viaje de una petición por dentro y un diccionario de conceptos.
 > - [El código explicado](docs/codigo/): cada módulo, archivo por archivo y línea por línea.
 
+## Tecnologías y frameworks
+
+| Capa | Tecnologías |
+|---|---|
+| Lenguaje y build | **Java 21** (Eclipse Temurin) · **Maven 3.9** (multi-módulo) · Lombok 1.18 |
+| Backend | **Spring Boot 3.5.0** (Spring Framework 6.2) · Spring Web MVC + Tomcat · Spring Data JPA + **Hibernate 6.6** · Bean Validation · Jackson |
+| API Gateway | **Spring Cloud Gateway 4.3** (Spring Cloud 2025.0.0) · WebFlux + Netty |
+| Seguridad | **Keycloak 26.0.7** (OIDC / OAuth 2.0, JWT) · **Spring Security 6.5** (Resource Server + OAuth2 Client) |
+| Comunicación y resiliencia | Spring **RestClient** · **Resilience4j 2.2** (retry + circuit breaker) · OSRM (mapas) + Haversine |
+| Base de datos | **H2 2.3** en archivo (una por microservicio) |
+| Documentación | **springdoc-openapi 2.8.9** · Swagger UI 5.21 (OpenAPI 3) |
+| Logs y monitoreo | SLF4J + Logback · MDC (correlation id) · Spring Boot Actuator · Micrometer |
+| Infraestructura | **Docker** + **Docker Compose** · nginx 1.27 |
+| Frontend | HTML + CSS + JavaScript (sin framework) · keycloak-js 26.0.7 |
+| Pruebas | **Postman** + Newman 6.2 |
+
+Detalle de cada una (versión, para qué se usa y por qué se eligió): [docs/TECNOLOGIAS.md](docs/TECNOLOGIAS.md).
+
 ## Arquitectura
 
 ```mermaid
@@ -105,8 +123,11 @@ No mezcles las dos opciones: usan los mismos puertos.
 | Usuario | Contraseña | Rol |
 |---|---|---|
 | `admin1` | `admin123` | ADMINISTRADOR |
-| `cliente1` | `cliente123` | CLIENTE |
-| `tecnico1` | `tecnico123` | TECNICO |
+| `cliente1` | `cliente123` | CLIENTE (es el cliente nº 1, Carlos García) |
+| `tecnico1` | `tecnico123` | TECNICO (es el técnico nº 1, Juan Pérez) |
+| `tecnico2` | `tecnico123` | TECNICO (es la técnica nº 2, Ana Gómez) |
+
+Cada usuario está **vinculado a su registro del padrón**: Keycloak guarda los atributos `clienteId` y `tecnicoId` y los manda dentro del token. El frontend los lee para mostrarle a cada uno **solo lo suyo**.
 
 Client: `bda-client` (público, con *Direct Access Grants* para Postman y Authorization Code + PKCE para el frontend). Client `ms-solicitudes`: cuenta de servicio, rol `SISTEMA`. Consola de Keycloak: http://localhost:47390 (usuario `admin` / `admin`).
 
@@ -125,7 +146,7 @@ En Swagger, el botón **Authorize** pide el token: pegá el `access_token` de Ke
 ## Colección de Postman
 
 Archivos en [`postman/`](postman/):
-- `Tecnica-Patito.postman_collection.json`: la colección (81 peticiones con tests automáticos).
+- `Tecnica-Patito.postman_collection.json`: la colección (83 peticiones con tests automáticos).
 - `Tecnica-Patito.postman_environment.json`: el entorno "Técnica Patito – Local".
 
 | Carpeta | Qué prueba |
@@ -174,6 +195,7 @@ Todos a través de `http://localhost:47380`. Los roles son los que acepta `@PreA
 | GET | `/api/v1/solicitudes?estado=&page=&size=` | Listar solicitudes (paginado) | todos |
 | GET | `/api/v1/solicitudes/{solicitudId}` | Detalle y estado actual | todos |
 | GET | `/api/v1/solicitudes/{solicitudId}/historial` | Historial de estados (RN-7) | todos |
+| GET | `/api/v1/solicitudes/informe?desde=&hasta=` | Informe de gestión: estados, ofertas, estrategias, facturación y desempeño por técnico | ADMINISTRADOR |
 | POST | `/api/v1/solicitudes/elegir` | Probar candidatos y costo antes de ofertar | ADMINISTRADOR, CLIENTE |
 | POST | `/api/v1/solicitudes/{solicitudId}/ofertar/{tecnicoId}` | Enviar oferta → OFERTADA | ADMINISTRADOR, CLIENTE |
 | POST | `/api/v1/solicitudes/{solicitudId}/aceptar/{tecnicoId}` | Aceptar oferta y calcular costo → ASIGNADA | ADMINISTRADOR, TECNICO |
@@ -260,4 +282,5 @@ Todas las respuestas de error traen `correlationId`: buscándolo en los logs se 
 | Asignación | Automática por defecto, manual opcional (`modoAsignacion`) | F5 y RN-3 piden que el sistema oferte solo; el modo manual conserva los endpoints `/elegir` y `/ofertar` del PDF |
 | Llamadas sin usuario | Cuenta de servicio `ms-solicitudes` (client_credentials, rol `SISTEMA`) | El scheduler no tiene token de usuario para consultar a ms-tecnicos |
 | Puertos | Rango 473xx: frontend 47300, gateway 47380, ms 47381-47383, Keycloak 47390 | Los puertos típicos (8080, 3000, 9090) chocan con otros programas. El formulario del TPI decía 8080-8083 y 9090 |
+| Usuarios ↔ padrón | Atributos `clienteId`/`tecnicoId` en Keycloak, enviados como claims del token | El frontend no deja elegir identidad: el cliente ve solo sus datos y sus solicitudes, y el técnico solo sus trabajos |
 | Frontend | HTML + JS sin framework, keycloak-js 26.0.7, nginx 1.27.3 | El PDF lo dejaba fuera del alcance; se agregó para la demostración. Usa el flujo Authorization Code + PKCE que recomienda la cátedra |
