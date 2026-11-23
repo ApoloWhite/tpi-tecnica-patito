@@ -23,6 +23,7 @@ const estado = {
     seleccionada: null,
     historial: [],
     candidatos: null,
+    accionAbierta: null,   // formulario de motivo abierto: { tipo, id } (cancelar, reprogramar, derivar, rechazar-presupuesto)
     clienteActual: null,   // sale del token (claim clienteId)
     tecnicoActual: null,   // sale del token (claim tecnicoId)
 };
@@ -141,7 +142,8 @@ async function mostrar(pestania) {
 /** Refresca solo la vista de solicitudes, para ver los cambios automáticos (ofertas y vencimientos). */
 async function refrescar() {
     if (estado.pestania !== "solicitudes" || document.hidden) return;
-    const ocupado = document.activeElement?.closest?.("#detalle form, #detalle input, #detalle textarea") || estado.candidatos;
+    const ocupado = document.activeElement?.closest?.("#detalle form, #detalle input, #detalle textarea")
+        || estado.candidatos || estado.accionAbierta;
     await cargarSolicitudes(true);
     if (estado.seleccionada && !ocupado) await cargarDetalle(estado.seleccionada.id, true);
 }
@@ -204,7 +206,7 @@ async function cargarSolicitudes(silencioso = false) {
         </tbody>
       </table>`;
     contenedor.querySelectorAll("tbody tr").forEach(tr =>
-        tr.addEventListener("click", () => { estado.candidatos = null; cargarDetalle(Number(tr.dataset.id)); }));
+        tr.addEventListener("click", () => { estado.candidatos = null; estado.accionAbierta = null; cargarDetalle(Number(tr.dataset.id)); }));
     if (!silencioso) contenedor.scrollTop = 0;
 }
 
@@ -214,8 +216,12 @@ async function cargarDetalle(id, silencioso = false) {
             api("GET", `/api/v1/solicitudes/${id}`),
             api("GET", `/api/v1/solicitudes/${id}/historial`),
         ]);
+        const sinCambios = silencioso && estado.seleccionada?.id === id
+            && JSON.stringify(solicitud) === JSON.stringify(estado.seleccionada)
+            && historial.length === estado.historial.length;
         estado.seleccionada = solicitud;
         estado.historial = historial;
+        if (sinCambios) return;   // nada nuevo: no se redibuja (si se redibujara, un clic en curso se perdería)
     } catch { return; }
     document.querySelectorAll("#tabla-solicitudes tbody tr").forEach(tr =>
         tr.classList.toggle("activa", Number(tr.dataset.id) === id));
@@ -283,6 +289,19 @@ function acciones(s) {
     const b = (accion, texto, clase = "") => `<button type="button" class="btn ${clase}" data-accion="${accion}">${texto}</button>`;
     const botones = [];
     const tecnicoDeLaOferta = esAdmin() || s.tecnicoId === estado.tecnicoActual;
+    const abierta = estado.accionAbierta?.id === s.id ? ACCIONES_CON_MOTIVO[estado.accionAbierta.tipo] : null;
+    if (abierta) {
+        return `<form id="form-motivo" class="formulario" style="width:100%">
+          <div class="campo ancho">
+            <label for="m-texto">${esc(abierta.pregunta)}</label>
+            <input id="m-texto" maxlength="200" value="${esc(abierta.porDefecto)}" placeholder="${esc(abierta.ejemplo)}">
+          </div>
+          <div class="campo ancho" style="flex-direction:row; gap:8px">
+            <button class="btn ${abierta.clase}" type="submit">${esc(abierta.confirmar)}</button>
+            <button class="btn secundario" type="button" data-accion="cerrar-motivo">Volver</button>
+          </div>
+        </form>`;
+    }
     switch (s.estado) {
         case "PENDIENTE":
             if (puedeCliente()) botones.push(b("candidatos", "Buscar candidatos y ofertar"), b("cancelar", "Cancelar", "peligro"));
@@ -317,6 +336,18 @@ function acciones(s) {
     return botones.length ? botones.join("") : `<p class="nota">Tu rol no tiene acciones en este estado.</p>`;
 }
 
+/** Acciones que piden un texto (motivo). Se completan en un formulario dentro del panel, sin prompt() ni confirm(). */
+const ACCIONES_CON_MOTIVO = {
+    "cancelar": { pregunta: "Motivo de la cancelación (opcional)", ejemplo: "Ya no lo necesito", porDefecto: "",
+        confirmar: "Confirmar cancelación", clase: "peligro", ruta: "cancelar", mensaje: "Solicitud cancelada" },
+    "rechazar-presupuesto": { pregunta: "Rechazar el presupuesto cancela la solicitud. Motivo:", ejemplo: "", porDefecto: "Cliente rechazó el presupuesto",
+        confirmar: "Confirmar rechazo", clase: "peligro", ruta: "cancelar", mensaje: "Presupuesto rechazado: solicitud cancelada" },
+    "reprogramar": { pregunta: "¿Qué repuesto falta?", ejemplo: "Rodillo de arrastre", porDefecto: "",
+        confirmar: "Reprogramar", clase: "", ruta: "reprogramar", mensaje: "Solicitud reprogramada" },
+    "derivar": { pregunta: "¿Por qué se deriva a otro técnico?", ejemplo: "La falla requiere otra certificación", porDefecto: "",
+        confirmar: "Derivar", clase: "", ruta: "derivar", mensaje: "Solicitud derivada" },
+};
+
 function conectarAcciones(s) {
     const base = `/api/v1/solicitudes/${s.id}`;
     const ejecutar = async (metodo, ruta, cuerpo, mensaje) => {
@@ -324,11 +355,16 @@ function conectarAcciones(s) {
             await api(metodo, ruta, cuerpo);
             aviso(mensaje);
             estado.candidatos = null;
+            estado.accionAbierta = null;
             await cargarSolicitudes(true);
             await cargarDetalle(s.id, true);
         } catch { /* aviso ya mostrado */ }
     };
-    const motivo = texto => { const m = prompt(texto); return m === null ? null : encodeURIComponent(m); };
+    const abrirMotivo = tipo => {
+        estado.accionAbierta = { tipo, id: s.id };
+        dibujarDetalle();
+        $("#m-texto")?.focus();
+    };
     $("#detalle").querySelectorAll("[data-accion]").forEach(boton => boton.addEventListener("click", async () => {
         switch (boton.dataset.accion) {
             case "candidatos": return buscarCandidatos(s);
@@ -338,25 +374,23 @@ function conectarAcciones(s) {
             case "aprobar": return ejecutar("POST", `${base}/aprobar-presupuesto`, undefined, "Presupuesto aprobado: trabajo en curso");
             case "finalizar": return ejecutar("POST", `${base}/finalizar`, undefined, "Trabajo finalizado");
             case "reanudar": return ejecutar("POST", `${base}/reanudar`, undefined, "Trabajo reanudado");
+            case "cancelar":
             case "rechazar-presupuesto":
-                if (!confirm("¿Rechazar el presupuesto? La solicitud se cancela.")) return;
-                return ejecutar("POST", `${base}/cancelar?motivo=${encodeURIComponent("Cliente rechazó el presupuesto")}`, undefined, "Solicitud cancelada");
-            case "cancelar": {
-                const m = motivo("Motivo de la cancelación"); if (m === null) return;
-                return ejecutar("POST", `${base}/cancelar?motivo=${m}`, undefined, "Solicitud cancelada");
-            }
-            case "reprogramar": {
-                const m = motivo("¿Qué repuesto falta?"); if (m === null) return;
-                return ejecutar("POST", `${base}/reprogramar?motivo=${m}`, undefined, "Solicitud reprogramada");
-            }
-            case "derivar": {
-                const m = motivo("¿Por qué se deriva?"); if (m === null) return;
-                return ejecutar("POST", `${base}/derivar?motivo=${m}`, undefined, "Solicitud derivada");
-            }
+            case "reprogramar":
+            case "derivar":
+                return abrirMotivo(boton.dataset.accion);
+            case "cerrar-motivo": estado.accionAbierta = null; return dibujarDetalle();
             case "ofertar": return ejecutar("POST", `${base}/ofertar/${boton.dataset.tecnico}`, undefined, "Oferta enviada");
             case "cerrar-candidatos": estado.candidatos = null; return dibujarDetalle();
         }
     }));
+    $("#form-motivo")?.addEventListener("submit", e => {
+        e.preventDefault();
+        const accion = ACCIONES_CON_MOTIVO[estado.accionAbierta.tipo];
+        const texto = $("#m-texto").value.trim();
+        const consulta = texto ? `?motivo=${encodeURIComponent(texto)}` : "";
+        ejecutar("POST", `${base}/${accion.ruta}${consulta}`, undefined, accion.mensaje);
+    });
     $("#form-presupuesto")?.addEventListener("submit", e => {
         e.preventDefault();
         ejecutar("POST", `${base}/presupuesto`, { diagnostico: $("#p-diag").value, importe: Number($("#p-imp").value) }, "Presupuesto cargado");

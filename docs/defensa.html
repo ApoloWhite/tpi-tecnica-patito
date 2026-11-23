@@ -1,0 +1,1929 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guía de Defensa Oral — TPI Técnica Patito S.R.L. (Grupo 107)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --bg-elevated: #ffffff;
+      --bg-subtle: #f1f5f9;
+      --bg-code: #0f172a;
+      --text: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --border-strong: #cbd5e1;
+      --primary: #1d4ed8;
+      --primary-soft: #dbeafe;
+      --primary-text: #1e40af;
+      --accent: #0284c7;
+      --success: #15803d;
+      --success-soft: #dcfce7;
+      --warning: #b45309;
+      --warning-soft: #fef3c7;
+      --danger: #b91c1c;
+      --danger-soft: #fee2e2;
+      --purple: #6d28d9;
+      --purple-soft: #ede9fe;
+      --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+      --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.07);
+      --radius: 10px;
+      --sidebar-w: 280px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --bg: #0b1120;
+        --bg-elevated: #111827;
+        --bg-subtle: #1e293b;
+        --bg-code: #070b14;
+        --text: #f1f5f9;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border: #1e293b;
+        --border-strong: #334155;
+        --primary: #3b82f6;
+        --primary-soft: rgba(59, 130, 246, 0.16);
+        --primary-text: #93c5fd;
+        --accent: #38bdf8;
+        --success: #22c55e;
+        --success-soft: rgba(34, 197, 94, 0.16);
+        --warning: #f59e0b;
+        --warning-soft: rgba(245, 158, 11, 0.16);
+        --danger: #ef4444;
+        --danger-soft: rgba(239, 68, 68, 0.16);
+        --purple: #a78bfa;
+        --purple-soft: rgba(167, 139, 250, 0.16);
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+        --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+      }
+    }
+
+    :root[data-theme="dark"] {
+      --bg: #0b1120;
+      --bg-elevated: #111827;
+      --bg-subtle: #1e293b;
+      --bg-code: #070b14;
+      --text: #f1f5f9;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border: #1e293b;
+      --border-strong: #334155;
+      --primary: #3b82f6;
+      --primary-soft: rgba(59, 130, 246, 0.16);
+      --primary-text: #93c5fd;
+      --accent: #38bdf8;
+      --success: #22c55e;
+      --success-soft: rgba(34, 197, 94, 0.16);
+      --warning: #f59e0b;
+      --warning-soft: rgba(245, 158, 11, 0.16);
+      --danger: #ef4444;
+      --danger-soft: rgba(239, 68, 68, 0.16);
+      --purple: #a78bfa;
+      --purple-soft: rgba(167, 139, 250, 0.16);
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
+      --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    body {
+      display: flex;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    /* Sidebar Navigation */
+    .sidebar {
+      width: var(--sidebar-w);
+      background: var(--bg-elevated);
+      border-right: 1px solid var(--border);
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      overflow-y: auto;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 1rem;
+    }
+
+    .brand {
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1rem;
+    }
+
+    .brand-badge {
+      display: inline-block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary-text);
+      margin-bottom: 0.4rem;
+    }
+
+    .brand h1 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    .brand p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .progress-widget {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.78rem;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+    }
+
+    .progress-bar-track {
+      width: 100%;
+      height: 8px;
+      background: var(--border-strong);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--success);
+      transition: width 0.25s ease;
+    }
+
+    .progress-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.45rem;
+      font-size: 0.72rem;
+      color: var(--text-muted);
+    }
+
+    .btn-link {
+      background: none;
+      border: none;
+      color: var(--primary);
+      cursor: pointer;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      flex: 1;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.52rem 0.65rem;
+      border-radius: 7px;
+      text-decoration: none;
+      color: var(--text-secondary);
+      font-size: 0.84rem;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: var(--primary-soft);
+      color: var(--primary-text);
+      font-weight: 600;
+    }
+
+    .nav-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 700;
+      opacity: 0.75;
+      min-width: 1.3rem;
+    }
+
+    .sidebar-footer {
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--border);
+      margin-top: 0.9rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .theme-btn {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border-radius: 7px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-subtle);
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .theme-btn:hover {
+      border-color: var(--primary);
+    }
+
+    /* Main Content */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      min-width: 0; /* sin esto, el código largo estira la página más allá de la pantalla */
+      max-width: 1180px;
+      padding: 2rem 2.5rem 5rem;
+    }
+
+    .section {
+      padding-top: 1.5rem;
+      margin-bottom: 3.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .section:first-of-type {
+      border-top: none;
+      padding-top: 0;
+    }
+
+    .section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .section-eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--primary);
+      margin-bottom: 0.3rem;
+    }
+
+    .section-title {
+      font-size: 1.65rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-secondary);
+      margin-top: 0.35rem;
+    }
+
+    /* Cards & Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .card-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.18rem 0.55rem;
+      border-radius: 6px;
+      font-size: 0.73rem;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      white-space: nowrap;
+    }
+
+    .badge-primary { background: var(--primary-soft); color: var(--primary-text); }
+    .badge-success { background: var(--success-soft); color: var(--success); }
+    .badge-warning { background: var(--warning-soft); color: var(--warning); }
+    .badge-danger { background: var(--danger-soft); color: var(--danger); }
+    .badge-purple { background: var(--purple-soft); color: var(--purple); }
+
+    .method-get { background: #dbeafe; color: #1d4ed8; }
+    .method-post { background: #dcfce7; color: #15803d; }
+    .method-put { background: #fef3c7; color: #b45309; }
+    .method-patch { background: #ede9fe; color: #6d28d9; }
+    .method-delete { background: #fee2e2; color: #b91c1c; }
+
+    /* Speech Callouts */
+    .speech-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--primary);
+      border-radius: var(--radius);
+      padding: 1.35rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .speech-box p {
+      font-size: 0.96rem;
+      color: var(--text);
+      margin-bottom: 0.75rem;
+    }
+
+    .speech-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .callout {
+      padding: 1rem 1.2rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .callout-tip {
+      border-left: 4px solid var(--success);
+      background: var(--success-soft);
+    }
+
+    .callout-warn {
+      border-left: 4px solid var(--warning);
+      background: var(--warning-soft);
+    }
+
+    .callout-danger {
+      border-left: 4px solid var(--danger);
+      background: var(--danger-soft);
+    }
+
+    /* Tables */
+    .table-wrap {
+      width: 100%;
+      overflow-x: auto;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 1.25rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      text-align: left;
+    }
+
+    th {
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-weight: 700;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+      color: var(--text-secondary);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(59, 130, 246, 0.03);
+    }
+
+    /* Code Blocks */
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82em;
+      background: var(--bg-subtle);
+      color: var(--primary-text);
+      padding: 0.15rem 0.38rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    .code-container {
+      position: relative;
+      background: var(--bg-code);
+      color: #e2e8f0;
+      border-radius: 8px;
+      margin: 0.75rem 0;
+      overflow: hidden;
+      border: 1px solid #1e293b;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.45rem 0.85rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      padding: 0.2rem 0.55rem;
+      border-radius: 5px;
+      font-size: 0.72rem;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    pre {
+      padding: 0.95rem 1.1rem;
+      overflow-x: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      line-height: 1.55;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+      border: none;
+      font-size: inherit;
+    }
+
+    /* Syntax highlight helpers */
+    .kw { color: #c084fc; font-weight: 600; }
+    .ann { color: #fbbf24; }
+    .str { color: #86efac; }
+    .cmt { color: #64748b; font-style: italic; }
+    .num { color: #f87171; }
+    .typ { color: #38bdf8; }
+
+    /* Line by line table */
+    .line-explain-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-top: 0.85rem;
+    }
+
+    .line-explain-item {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 0.75rem;
+      padding: 0.55rem 0.75rem;
+      background: var(--bg-subtle);
+      border-radius: 6px;
+      font-size: 0.84rem;
+      border-left: 3px solid var(--primary);
+    }
+
+    .line-ref {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 700;
+      color: var(--primary-text);
+      font-size: 0.78rem;
+    }
+
+    /* Reveal Exercise Box */
+    .reveal-box {
+      margin-top: 0.85rem;
+      border-top: 1px dashed var(--border-strong);
+      padding-top: 0.85rem;
+    }
+
+    .reveal-btn {
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      padding: 0.5rem 0.95rem;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .reveal-btn:hover {
+      opacity: 0.92;
+    }
+
+    .reveal-content {
+      display: none;
+      margin-top: 0.85rem;
+      padding: 1rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      font-size: 0.88rem;
+      color: var(--text);
+    }
+
+    .reveal-content.open {
+      display: block;
+    }
+
+    /* Accordions & Questions Bank */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      background: var(--bg-elevated);
+      padding: 1rem;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 240px;
+      padding: 0.55rem 0.85rem;
+      border-radius: 7px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 0.88rem;
+    }
+
+    .category-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .pill-btn {
+      padding: 0.42rem 0.75rem;
+      border-radius: 999px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg-subtle);
+      color: var(--text-secondary);
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .pill-btn.active {
+      background: var(--primary);
+      color: #ffffff;
+      border-color: var(--primary);
+    }
+
+    .qa-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .qa-item {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+
+    .qa-item.reviewed {
+      border-left: 4px solid var(--success);
+    }
+
+    .qa-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .qa-header:hover {
+      background: var(--bg-subtle);
+    }
+
+    .qa-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex: 1;
+    }
+
+    .qa-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--primary);
+      background: var(--primary-soft);
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+    }
+
+    .qa-question {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text);
+    }
+
+    .qa-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .check-btn {
+      padding: 0.32rem 0.65rem;
+      border-radius: 6px;
+      border: 1px solid var(--border-strong);
+      background: var(--bg);
+      color: var(--text-secondary);
+      font-size: 0.75rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .qa-item.reviewed .check-btn {
+      background: var(--success-soft);
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .qa-body {
+      display: none;
+      padding: 1rem 1.25rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: var(--bg-subtle);
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .qa-item.open .qa-body {
+      display: block;
+    }
+
+    .qa-chevron {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .qa-item.open .qa-chevron {
+      transform: rotate(180deg);
+    }
+
+    /* Diagram SVG wrappers */
+    .diagram-box {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      margin: 1rem 0 1.5rem;
+      overflow-x: auto;
+    }
+
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 0.85rem;
+      margin: 1rem 0;
+    }
+
+    .flow-step {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--primary);
+      border-radius: 8px;
+      padding: 0.9rem;
+      font-size: 0.84rem;
+    }
+
+    .flow-step-num {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 0.25rem;
+    }
+
+    .flow-step-title {
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+    }
+
+    ul.clean-list {
+      padding-left: 1.2rem;
+      margin-top: 0.4rem;
+    }
+
+    ul.clean-list li {
+      margin-bottom: 0.35rem;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 960px) {
+      body {
+        flex-direction: column;
+      }
+      .sidebar {
+        position: sticky;
+        top: 0;
+        width: 100%;
+        height: auto;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 1rem;
+      }
+      .brand, .progress-widget, .sidebar-footer {
+        display: none;
+      }
+      .nav-list {
+        flex-direction: row;
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+      }
+      .nav-link {
+        white-space: nowrap;
+        padding: 0.4rem 0.65rem;
+        font-size: 0.8rem;
+      }
+      .main {
+        margin-left: 0;
+        padding: 1.25rem 1rem 4rem;
+      }
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+      .line-explain-item {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA LATERAL FIJA -->
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="brand-badge">UTN FRC · 3K1 · Grupo 107</span>
+      <h1>Técnica Patito S.R.L.</h1>
+      <p>Guía interactiva para defensa oral de Backend de Aplicaciones</p>
+    </div>
+
+    <div class="progress-widget">
+      <div class="progress-header">
+        <span>Progreso de repaso</span>
+        <span id="progress-text">0 / 32 (0%)</span>
+      </div>
+      <div class="progress-bar-track">
+        <div class="progress-bar-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-actions">
+        <span>Guardado en navegador</span>
+        <button class="btn-link" id="reset-progress-btn" type="button">Reiniciar</button>
+      </div>
+    </div>
+
+    <nav>
+      <ul class="nav-list">
+        <li><a class="nav-link active" href="#resumen"><span class="nav-num">01</span>Resumen (30s / 2m)</a></li>
+        <li><a class="nav-link" href="#logica-negocio"><span class="nav-num">02</span>Lógica de negocio</a></li>
+        <li><a class="nav-link" href="#decisiones"><span class="nav-num">03</span>Decisiones y trade-offs</a></li>
+        <li><a class="nav-link" href="#keycloak"><span class="nav-num">04</span>Keycloak y Seguridad</a></li>
+        <li><a class="nav-link" href="#patrones"><span class="nav-num">05</span>Patrones de diseño</a></li>
+        <li><a class="nav-link" href="#postman"><span class="nav-num">06</span>Postman y ocultar datos</a></li>
+        <li><a class="nav-link" href="#codigo"><span class="nav-num">07</span>Código línea por línea</a></li>
+        <li><a class="nav-link" href="#preguntas"><span class="nav-num">08</span>Banco de 32 preguntas</a></li>
+        <li><a class="nav-link" href="#trampa"><span class="nav-num">09</span>Preguntas trampa</a></li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="theme-btn" id="theme-toggle" type="button">🌗 Cambiar tema claro/oscuro</button>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="main">
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 1: RESUMEN DEL PROYECTO                                     -->
+    <!-- =================================================================== -->
+    <section class="section" id="resumen">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 01 · Apertura de la defensa</div>
+        <h2 class="section-title">Resumen del proyecto (para decir en voz alta)</h2>
+        <p class="section-subtitle">Tenés dos versiones listas: el pitch corto de 30 segundos para arrancar cuando el profe dice "¿de qué trata su TPI?" y el recorrido técnico de 2 minutos.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="speech-box">
+          <div class="card-header">
+            <h3 class="card-title">⏱️ Explicación de 30 segundos</h3>
+            <span class="badge badge-primary">Elevator Pitch</span>
+          </div>
+          <p>
+            «Nuestro sistema es el backend de microservicios para <strong>Técnica Patito S.R.L.</strong>, una empresa de soporte técnico domiciliario en Córdoba.
+          </p>
+          <p>
+            Resuelve el ciclo de vida completo de una solicitud de arreglo: el cliente pide un servicio, el sistema busca automáticamente a los técnicos disponibles que tengan la certificación requerida y estén a menos de 13 km, les envía una oferta que vence en 15 minutos, calcula el costo real de traslado usando la API de mapas OSRM con respaldo Haversine y el patrón Strategy, gestiona el presupuesto y audita cada cambio en un historial inmutable, todo protegido con JWT de Keycloak a través de un API Gateway.»
+          </p>
+        </div>
+
+        <div class="speech-box">
+          <div class="card-header">
+            <h3 class="card-title">🎙️ Explicación de 2 minutos</h3>
+            <span class="badge badge-purple">Recorrido Completo</span>
+          </div>
+          <p>
+            «Dividimos la solución en <strong>4 módulos ejecutables y 1 librería compartida</strong> bajo Java 21 y Spring Boot 3.5.0:
+          </p>
+          <p>
+            1) <strong>API Gateway (puerto 47380)</strong>: es el único punto de entrada. Genera o propaga el header <code>X-Correlation-ID</code> para trazabilidad distribuida, valida la firma y expiración del JWT emitido por <strong>Keycloak (puerto 47390, realm patito)</strong> devolviendo 401 si no es válido, y centraliza el Swagger de los tres servicios.
+          </p>
+          <p>
+            2) <strong>MS-Clientes (47383)</strong> y <strong>MS-Técnicos (47382)</strong>: administran sus respectivos padrones con bases de datos H2 independientes persistidas en archivo. MS-Técnicos además filtra candidatos disponibles con la certificación pedida a menos de 13 km usando la fórmula de Haversine local.
+          </p>
+          <p>
+            3) <strong>MS-Solicitudes (47381)</strong>: es el orquestador. Al crear una solicitud aplica el patrón <strong>Snapshot</strong> copiando nombre, domicilio y coordenadas del cliente. Para hablar con Clientes y Técnicos usa <code>RestClient</code> propagando el JWT y el <code>X-Correlation-ID</code>, protegido con <strong>Resilience4j</strong> (Retry + Circuit Breaker) que devuelve 503 si una dependencia cae. Controla el límite de 2 solicitudes en espera y 1 en curso por técnico (RN-5), expira ofertas automáticamente a los 15 minutos con un <code>@Scheduled</code> y bloqueo optimista <code>@Version</code>, y calcula el costo de visita combinando distancia en calle de <strong>OSRM</strong> (o Haversine si no hay internet) con el patrón <strong>Strategy</strong> para recargos por urgencia y fuera de horario.
+          </p>
+          <p>
+            4) La asignación puede ser <strong>automática</strong> (por defecto: el sistema oferta solo al técnico más cercano y, si rechaza o vence, pasa al siguiente) o <strong>manual</strong> (el cliente elige con <code>/elegir</code> y <code>/ofertar</code>). Para la demo sumamos un <strong>frontend web (47300)</strong> con login Authorization Code + PKCE, donde cada usuario ve solo lo suyo, y un <strong>informe de gestión</strong> para el administrador.»
+          </p>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="margin-top: 1.25rem;">
+        <table>
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Puerto</th>
+              <th>Base de Datos / Estado</th>
+              <th>Responsabilidad clave en la arquitectura</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>keycloak</code></td>
+              <td><code>47390</code> (host) / <code>8080</code> (interno, red Docker)</td>
+              <td>Importa <code>realm-export.json</code> (realm <code>patito</code>)</td>
+              <td>Identity Provider OAuth2/OIDC. Emite JWT firmados (30 min) para <code>admin1</code>, <code>cliente1</code>, <code>tecnico1</code> y <code>tecnico2</code> mediante el cliente público <code>bda-client</code> (los tokens llevan <code>clienteId</code>/<code>tecnicoId</code>), y para la cuenta de servicio <code>ms-solicitudes</code> (rol <code>SISTEMA</code>).</td>
+            </tr>
+            <tr>
+              <td><code>api-gateway</code></td>
+              <td><code>47380</code> (único expuesto en prod, junto con Keycloak y el frontend)</td>
+              <td>Stateless (Spring Cloud Gateway WebFlux)</td>
+              <td>Primer control de seguridad (401 si no hay JWT válido), generación de <code>X-Correlation-ID</code> (<code>@Order(-200)</code>), ruteo por path y Swagger UI unificado.</td>
+            </tr>
+            <tr>
+              <td><code>ms-solicitudes</code></td>
+              <td><code>47381</code></td>
+              <td>H2 archivo: <code>solicitudes-db</code> (tablas: <code>solicitud</code>, <code>solicitud_tipo</code>, <code>historial_estado</code>)</td>
+              <td>Orquestador del ciclo de vida (8 estados), Snapshot, ventana de 15 min (<code>OfertaScheduler</code>), límite RN-5, Strategy de costos, cliente REST con CircuitBreaker/Retry.</td>
+            </tr>
+            <tr>
+              <td><code>ms-tecnicos</code></td>
+              <td><code>47382</code></td>
+              <td>H2 archivo: <code>tecnicos-db</code> (tablas: <code>tecnico</code>, <code>certificacion</code>, <code>zona_cobertura</code>, <code>tecnico_certificacion</code>, <code>tecnico_zona</code>)</td>
+              <td>Padrón de técnicos, catálogos de certificaciones y zonas, cambio de disponibilidad y búsqueda de candidatos disponibles con certificación a &lt; 13 km (Haversine).</td>
+            </tr>
+            <tr>
+              <td><code>ms-clientes</code></td>
+              <td><code>47383</code></td>
+              <td>H2 archivo: <code>clientes-db</code> (tabla: <code>cliente</code>)</td>
+              <td>ABM completo del padrón de clientes con validación de DNI único y coordenadas geográficas de su domicilio.</td>
+            </tr>
+            <tr>
+              <td><code>commons-geo</code></td>
+              <td>Librería Maven (JAR)</td>
+              <td>Sin base de datos</td>
+              <td>Auto-configuración Spring Boot (<code>@AutoConfiguration</code>) que provee <code>GeoService</code>: consulta rutas en calle a <code>router.project-osrm.org</code> y cae a <code>Haversine</code> si falla.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 2: LÓGICA DE NEGOCIO                                        -->
+    <!-- =================================================================== -->
+    <section class="section" id="logica-negocio">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 02 · Dominio y Reglas</div>
+        <h2 class="section-title">Lógica de negocio, estados y reflejo en el código</h2>
+        <p class="section-subtitle">Cómo pasamos las 11 reglas del enunciado (RN-1 a RN-11) a clases concretas, validaciones y códigos de estado HTTP.</p>
+      </div>
+
+      <!-- Diagrama SVG de Máquina de Estados -->
+      <div class="diagram-box">
+        <h3 class="card-title" style="margin-bottom: 0.65rem;">🔄 Máquina de Estados de la Solicitud (<code>EstadoSolicitud.java</code> — RN-7)</h3>
+        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.85rem;">
+          Las transiciones están blindadas en un <code>EnumMap&lt;EstadoSolicitud, Set&lt;EstadoSolicitud&gt;&gt; TRANSICIONES</code>. Cualquier intento de saltar a un estado no permitido por el mapa lanza <code>ReglaNegocioException</code> → <strong>HTTP 422</strong>. Los estados con borde naranja pertenecen al conjunto <code>EN_ESPERA = EnumSet.of(OFERTADA, ASIGNADA, REPROGRAMADA)</code> que contabiliza el límite de máximo 2 por técnico (RN-5).
+        </p>
+        <svg viewBox="0 0 980 280" style="width:100%; height:auto; min-width:740px; font-family: 'Inter', sans-serif;">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#64748b" />
+            </marker>
+            <marker id="arrow-blue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+              <path d="M 0 1 L 10 5 L 0 9 z" fill="#2563eb" />
+            </marker>
+          </defs>
+
+          <!-- Nodos principales -->
+          <!-- PENDIENTE -->
+          <rect x="30" y="95" width="130" height="50" rx="8" fill="#dbeafe" stroke="#2563eb" stroke-width="2"/>
+          <text x="95" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="#1e40af">PENDIENTE</text>
+
+          <!-- OFERTADA -->
+          <rect x="225" y="95" width="130" height="50" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+          <text x="290" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">OFERTADA</text>
+          <text x="290" y="135" text-anchor="middle" font-size="10" font-weight="600" fill="#b45309">(EN_ESPERA · 15m)</text>
+
+          <!-- ASIGNADA -->
+          <rect x="425" y="95" width="130" height="50" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+          <text x="490" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#92400e">ASIGNADA</text>
+          <text x="490" y="135" text-anchor="middle" font-size="10" font-weight="600" fill="#b45309">(EN_ESPERA · Costo)</text>
+
+          <!-- EN_CURSO -->
+          <rect x="625" y="95" width="130" height="50" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="2.5"/>
+          <text x="690" y="118" text-anchor="middle" font-size="13" font-weight="700" fill="#5b21b6">EN_CURSO</text>
+          <text x="690" y="135" text-anchor="middle" font-size="10" font-weight="600" fill="#6d28d9">(Máx 1 por técnico)</text>
+
+          <!-- FINALIZADA -->
+          <rect x="825" y="95" width="130" height="50" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+          <text x="890" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="#166534">FINALIZADA</text>
+
+          <!-- CANCELADA -->
+          <rect x="325" y="210" width="130" height="45" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+          <text x="390" y="237" text-anchor="middle" font-size="13" font-weight="700" fill="#991b1b">CANCELADA</text>
+
+          <!-- REPROGRAMADA -->
+          <rect x="625" y="210" width="140" height="48" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="2.5"/>
+          <text x="695" y="232" text-anchor="middle" font-size="12.5" font-weight="700" fill="#92400e">REPROGRAMADA</text>
+          <text x="695" y="248" text-anchor="middle" font-size="10" font-weight="600" fill="#b45309">(EN_ESPERA · Repuesto)</text>
+
+          <!-- DERIVADA -->
+          <rect x="380" y="12" width="130" height="42" rx="8" fill="#f1f5f9" stroke="#475569" stroke-width="2"/>
+          <text x="445" y="37" text-anchor="middle" font-size="12.5" font-weight="700" fill="#334155">DERIVADA</text>
+
+          <!-- Flechas flujo feliz -->
+          <line x1="160" y1="120" x2="218" y2="120" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+          <text x="189" y="112" text-anchor="middle" font-size="10.5" fill="#2563eb" font-weight="600">ofertar</text>
+
+          <line x1="355" y1="120" x2="418" y2="120" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+          <text x="386" y="112" text-anchor="middle" font-size="10.5" fill="#2563eb" font-weight="600">aceptar</text>
+
+          <line x1="555" y1="120" x2="618" y2="120" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+          <text x="586" y="112" text-anchor="middle" font-size="10.5" fill="#2563eb" font-weight="600">aprobar</text>
+
+          <line x1="755" y1="120" x2="818" y2="120" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow-blue)"/>
+          <text x="786" y="112" text-anchor="middle" font-size="10.5" fill="#2563eb" font-weight="600">finalizar</text>
+
+          <!-- Flecha rechazo o vencimiento 15 min: OFERTADA -> PENDIENTE -->
+          <path d="M 275 95 Q 190 52 115 92" fill="none" stroke="#64748b" stroke-width="1.8" stroke-dasharray="4" marker-end="url(#arrow)"/>
+          <text x="195" y="64" text-anchor="middle" font-size="10" fill="#64748b" font-weight="600">rechazar / vence 15 min</text>
+
+          <!-- Flechas a CANCELADA desde PENDIENTE, OFERTADA, ASIGNADA -->
+          <path d="M 95 145 Q 95 232 318 232" fill="none" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="290" y1="145" x2="365" y2="205" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <line x1="490" y1="145" x2="415" y2="205" stroke="#64748b" stroke-width="1.5" marker-end="url(#arrow)"/>
+          <text x="485" y="185" text-anchor="middle" font-size="10" fill="#64748b">cancelar</text>
+
+          <!-- Flechas EN_CURSO <-> REPROGRAMADA -->
+          <line x1="675" y1="145" x2="675" y2="203" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+          <text x="635" y="180" text-anchor="middle" font-size="10" fill="#64748b">reprogramar</text>
+          <line x1="710" y1="210" x2="710" y2="152" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+          <text x="742" y="180" text-anchor="middle" font-size="10" fill="#64748b">reanudar</text>
+
+          <!-- Flecha EN_CURSO -> DERIVADA -> PENDIENTE -->
+          <path d="M 690 95 Q 690 33 517 33" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+          <text x="615" y="25" text-anchor="middle" font-size="10" fill="#64748b">derivar (1° paso)</text>
+          <path d="M 380 33 Q 80 33 80 88" fill="none" stroke="#64748b" stroke-width="1.8" marker-end="url(#arrow)"/>
+          <text x="235" y="25" text-anchor="middle" font-size="10" fill="#64748b">automático en derivar() (2° paso)</text>
+        </svg>
+      </div>
+
+      <!-- Tabla exhaustiva de las 11 Reglas de Negocio -->
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Regla</th>
+              <th>Qué exige el negocio</th>
+              <th>Dónde está en el código</th>
+              <th>Cómo se implementa técnicamente</th>
+              <th>Fallo / HTTP</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="badge badge-primary">RN-1</span><br/>Tipos de servicio y datos obligatorios</td>
+              <td>Toda solicitud debe tener marca, modelo, descripción del problema y al menos 1 tipo de servicio (<code>REPARACION</code>, <code>INSTALACION</code>, <code>MANTENIMIENTO</code>).</td>
+              <td><code>ms-solicitudes</code><br/><code>SolicitudRequest.java</code> y <code>Solicitud.java</code></td>
+              <td>Anotaciones Jakarta Bean Validation en el record: <code>@NotEmpty Set&lt;@NotNull TipoServicio&gt; tiposServicio</code>, <code>@NotBlank String marca</code>, <code>@NotBlank String modelo</code>, <code>@NotBlank String descripcion</code>. En la entidad se persiste con <code>@ElementCollection</code> en la tabla <code>solicitud_tipo</code>.</td>
+              <td><code>400 Bad Request</code> con mapa <code>errores</code> por campo (EN-04)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-2</span><br/>Condiciones de candidatura</td>
+              <td>Para ser candidato el técnico debe estar <code>disponible = true</code>, poseer la certificación requerida (<code>especialidadId</code>) y estar dentro del radio de cobertura. Si no hay ninguno, queda en espera y se alerta al administrador.</td>
+              <td><code>ms-tecnicos</code>: <code>TecnicoService.buscarCandidatos()</code><br/><code>ms-solicitudes</code>: <code>SolicitudService.elegir()</code> y <code>ofertar()</code></td>
+              <td>Query JPQL <code>findTecnicosDisponiblesConCertificacion(certificacionId)</code> filtra disponibilidad + certificación en BD. En <code>elegir()</code> si la lista queda vacía se hace <code>log.warn("ALERTA ADMINISTRADOR: no hay técnicos candidatos...")</code> y devuelve <code>cantidad: 0</code>. En <code>ofertar()</code> vuelve a verificar que el <code>tecnicoId</code> esté entre los candidatos. En modo <code>AUTOMATICA</code>, <code>ofertarAutomaticamente()</code> elige al primero (el más cercano) que no esté en <code>tecnicosDescartados</code> ni al límite de RN-5; si no queda ninguno, deja la solicitud <code>PENDIENTE</code> y anota la alerta en el historial.</td>
+              <td>Si se intenta ofertar a quien no es candidato: <code>422 Unprocessable Entity</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-3</span><br/>Ventana de 15 minutos</td>
+              <td>El técnico tiene 15 minutos para aceptar o rechazar la oferta. Si rechaza o vence el plazo, la solicitud vuelve a <code>PENDIENTE</code> y se libera al técnico.</td>
+              <td><code>ms-solicitudes</code><br/><code>OfertaScheduler.java</code> y <code>SolicitudService.ofertar() / aceptar() / ofertasVencidas() / expirarOferta()</code></td>
+              <td>Al ofertar se guarda <code>ofertaExpira = LocalDateTime.now().plusMinutes(ventanaMinutos)</code> (15 por defecto, configurable con <code>OFERTA_VENTANA_MINUTOS</code>). <code>OfertaScheduler</code> corre cada 30 s (<code>@Scheduled</code>), pide los ids vencidos (<code>findByEstadoAndOfertaExpiraBefore(OFERTADA, now)</code>) y procesa <strong>cada uno en su propia transacción</strong> con <code>expirarOferta(id)</code>: descarta al técnico, pasa a <code>PENDIENTE</code> con usuario <code>"sistema"</code> y, si la solicitud es <code>AUTOMATICA</code>, la oferta sola al siguiente candidato (para consultar a ms-tecnicos sin usuario usa la cuenta de servicio, rol <code>SISTEMA</code>).</td>
+              <td>Si el técnico intenta aceptar vencida: <code>422 Unprocessable Entity</code> (EN-07)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-4</span><br/>Un técnico por solicitud y concurrencia</td>
+              <td>Una solicitud solo puede tener una oferta activa a la vez, solo ese técnico puede aceptarla/rechazarla, y no debe haber condiciones de carrera.</td>
+              <td><code>ms-solicitudes</code><br/><code>Solicitud.version</code> (<code>@Version</code>) y <code>SolicitudService.exigirTecnicoOfertado()</code></td>
+              <td><code>exigirTecnicoOfertado()</code> verifica <code>tecnicoId.equals(solicitud.getTecnicoId())</code>. Además, la entidad <code>Solicitud</code> tiene <code>@Version private Long version;</code> (bloqueo optimista JPA): si el scheduler expira la oferta al mismo tiempo que el técnico acepta, una de las dos transacciones lanza <code>ObjectOptimisticLockingFailureException</code>.</td>
+              <td>Otro técnico o conflicto concurrente: <code>422 Unprocessable Entity</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-5</span><br/>Límite de carga del técnico</td>
+              <td>Un técnico puede tener como máximo <strong>2 solicitudes en espera</strong> (<code>OFERTADA</code>, <code>ASIGNADA</code> o <code>REPROGRAMADA</code>) y <strong>1 solicitud <code>EN_CURSO</code></strong>.</td>
+              <td><code>ms-solicitudes</code><br/><code>EstadoSolicitud.EN_ESPERA</code>, <code>SolicitudService.validarLimiteEnEspera()</code> y <code>aprobarPresupuesto()</code></td>
+              <td>1) En <code>elegir()</code> se descartan del listado los técnicos con <code>countByTecnicoIdAndEstadoIn(id, EN_ESPERA) &gt;= 2</code>.<br/>2) En <code>ofertar()</code> se valida el límite de 2 en espera.<br/>3) En <code>aprobarPresupuesto()</code> (cuando pasa de <code>ASIGNADA</code> a <code>EN_CURSO</code>) se valida que <code>countByTecnicoIdAndEstado(id, EN_CURSO) &lt; 1</code>.</td>
+              <td><code>422 Unprocessable Entity</code> (EN-06)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-6</span><br/>Aprobación de presupuesto</td>
+              <td>Para que una solicitud pase a <code>EN_CURSO</code>, debe estar en estado <code>ASIGNADA</code>, el técnico debe haber cargado diagnóstico e importe de presupuesto, y el cliente debe aprobarlo.</td>
+              <td><code>ms-solicitudes</code><br/><code>SolicitudService.cargarPresupuesto()</code> y <code>aprobarPresupuesto()</code></td>
+              <td><code>cargarPresupuesto()</code> exige estado <code>ASIGNADA</code>, setea <code>diagnostico</code> y <code>presupuesto</code> y deja constancia en el historial (<code>ASIGNADA -&gt; ASIGNADA</code>). <code>aprobarPresupuesto()</code> exige estado <code>ASIGNADA</code> y que <code>solicitud.getPresupuesto() != null</code>.</td>
+              <td>Si no está <code>ASIGNADA</code> o no tiene presupuesto: <code>422 Unprocessable Entity</code> (EN-08)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-7</span><br/>Transiciones e historial de auditoría</td>
+              <td>Solo se permiten las transiciones de estado válidas y cada cambio debe quedar registrado con estado anterior, estado nuevo, fecha/hora, usuario y observaciones.</td>
+              <td><code>ms-solicitudes</code><br/><code>EstadoSolicitud.java</code>, <code>HistorialEstado.java</code>, <code>SolicitudService.transicionar()</code></td>
+              <td><code>EstadoSolicitud.puedePasarA(destino)</code> consulta el <code>EnumMap TRANSICIONES</code>. El método privado <code>transicionar()</code> valida el mapa, cambia el estado y guarda un registro inmutable en <code>HistorialEstadoRepository</code> tomando el usuario del JWT (<code>SecurityContextHolder.getContext().getAuthentication().getName()</code>, que es <code>preferred_username</code>) o <code>"sistema"</code>.</td>
+              <td>Transición no permitida: <code>422 Unprocessable Entity</code></td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-8</span><br/>Costo de visita con ruta real y respaldo</td>
+              <td>El costo de visita se calcula al aceptar la oferta como <code>montoFijo + (km × tarifaPorKm)</code> más recargos, usando distancia por calle (OSRM) o distancia lineal (Haversine) si la API externa falla.</td>
+              <td><code>commons-geo</code>: <code>OsrmGeoService.java</code>, <code>Haversine.java</code><br/><code>ms-solicitudes</code>: <code>SolicitudService.aceptar()</code></td>
+              <td>Al aceptar, <code>geoService.calcularRuta(...)</code> llama a OSRM con timeout de 2s/3s. Si responde OK, devuelve <code>Ruta(..., Fuente.OSRM)</code>. Si lanza <code>RestClientException</code>, el <code>catch</code> retorna <code>Haversine.ruta(..., Fuente.HAVERSINE)</code>. En la solicitud queda guardado <code>fuenteDistancia</code> (<code>"OSRM"</code> o <code>"HAVERSINE"</code>).</td>
+              <td>Nunca falla hacia el usuario (degradación elegante a Haversine)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-primary">RN-9</span><br/>Radio de cercanía de 13 km</td>
+              <td>Solo son candidatos los técnicos cuya ubicación base esté a menos de 13 km del domicilio del cliente.</td>
+              <td><code>ms-tecnicos</code>: <code>TecnicoService.buscarCandidatos()</code><br/><code>commons-geo</code>: <code>Haversine.distanciaKm()</code></td>
+              <td>Se inyecta <code>@Value("${app.candidatos.radio-km:13.0}") double radioKm</code>. Para cada técnico disponible con la certificación se calcula <code>Haversine.distanciaKm(...)</code> en memoria, se filtra con <code>.filter(c -&gt; c.distanciaKm() &lt; radioKm)</code> y se ordena de menor a mayor distancia.</td>
+              <td>Técnicos a ≥ 13 km (como Lejano López en Villa Carlos Paz, a 29.4 km del cliente 1) quedan excluidos</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">RN-10</span><br/>Snapshot de cliente y técnico <em>(Equipo)</em></td>
+              <td>La solicitud debe conservar los datos del cliente y del técnico tal como estaban al momento del servicio, sin verse afectada por modificaciones posteriores en los padrones.</td>
+              <td><code>ms-solicitudes</code><br/><code>Solicitud.java</code>, <code>SolicitudService.crear()</code> y <code>ofertar()</code></td>
+              <td>Al crear la solicitud se consulta <code>clientesClient.obtener(clienteId)</code> y se copian <code>clienteNombre</code>, <code>domicilio</code> (calle + barrio), <code>latitud</code> y <code>longitud</code> en la tabla <code>solicitud</code>. Al ofertar se copia <code>tecnicoNombre</code>. Así <code>GET /solicitudes</code> jamás necesita hacer llamadas REST a otros microservicios.</td>
+              <td>Si <code>ms-clientes</code> está caído al crear: <code>503 Service Unavailable</code> y no se guarda nada (EN-09)</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">RN-11</span><br/>Estrategias de costo <em>(Equipo)</em></td>
+              <td>El costo base (<code>$5000 + km × $800</code>) tiene recargos según prioridad y banda horaria (lunes a viernes de 8 a 18 hs es horario hábil).</td>
+              <td><code>ms-solicitudes</code><br/>Paquete <code>services.costos</code> (<code>CalculadoraCosto</code> + 4 clases <code>EstrategiaCosto</code>)</td>
+              <td><code>ESTANDAR</code>: 0% recargo (NORMAL en horario hábil).<br/><code>PRIORIDAD</code>: +30% (URGENTE en horario hábil).<br/><code>FUERA_HORARIO</code>: +50% (NORMAL en sábado, domingo, feriado, o antes de las 8:00 o desde las 18:00).<br/><code>COMBINADA</code>: +80% (URGENTE + fuera de horario: suma 30% + 50%).</td>
+              <td>Calculado con <code>BigDecimal</code> y <code>RoundingMode.HALF_UP</code> a 2 decimales</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 3: DECISIONES DE DISEÑO Y TRADE-OFFS                        -->
+    <!-- =================================================================== -->
+    <section class="section" id="decisiones">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 03 · Justificación Arquitectónica</div>
+        <h2 class="section-title">Decisiones de diseño: por qué hicimos X y por qué NO hicimos Z</h2>
+        <p class="section-subtitle">Cuando el profesor pregunta «¿por qué lo resolvieron así y no de otra forma?», usá esta tabla de trade-offs.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tema / Problema</th>
+              <th>✅ Qué decidimos hacer</th>
+              <th>🎯 Por qué lo hicimos así</th>
+              <th>❌ Alternativa descartada</th>
+              <th>🛑 Por qué NO la elegimos</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>1. Persistencia y motor de Base de Datos</strong></td>
+              <td>3 bases <strong>H2 en modo archivo</strong> (<code>jdbc:h2:file:/app/data/...-db</code>), una por microservicio, con volúmenes Docker nombrados y <code>DataLoader</code> condicional (<code>if (count() &gt; 0) return;</code>).</td>
+              <td>Cumple el patrón <em>Database-per-Service</em>, es liviana (no consume RAM extra de 3 motores pesados en Docker), y al estar en archivo los datos sobreviven a <code>docker restart</code> sin duplicar los datos iniciales.</td>
+              <td>H2 en memoria (<code>jdbc:h2:mem:</code>) o 3 contenedores PostgreSQL separados.</td>
+              <td>H2 en memoria pierde todo al reiniciar un contenedor (por ejemplo, al probar EN-07 cambiando una variable de entorno). Y 3 contenedores PostgreSQL sumaban peso e infraestructura innecesaria para los lineamientos de la cátedra.</td>
+            </tr>
+            <tr>
+              <td><strong>2. Datos de Cliente y Técnico en Solicitudes</strong></td>
+              <td><strong>Patrón Snapshot</strong>: copiar <code>clienteNombre</code>, <code>domicilio</code>, <code>latitud</code>, <code>longitud</code> y <code>tecnicoNombre</code> dentro de la tabla <code>solicitud</code> en el momento de crearla / ofertarla.</td>
+              <td>Cada microservicio es dueño de sus datos: la solicitud guarda <code>clienteId</code> (un número), no una relación JPA. Con la copia, listar o consultar solicitudes no llama a ms-clientes, y si el cliente se muda la solicitud conserva el domicilio al que había que ir.</td>
+              <td>Consultar a ms-clientes cada vez que se lee una solicitud, o una relación <code>@ManyToOne</code> a <code>Cliente</code>.</td>
+              <td>Consultar siempre acopla los servicios (si ms-clientes cae, no se pueden ni listar solicitudes) y suma latencia. Una relación JPA entre servicios es imposible: cada uno tiene su propia base.</td>
+            </tr>
+            <tr>
+              <td><strong>3. Dónde se controla la seguridad</strong></td>
+              <td><strong>Dos niveles</strong>: el gateway valida el JWT (401) y cada microservicio lo vuelve a validar y decide el rol con <code>@PreAuthorize</code> (403).</td>
+              <td>Defensa en profundidad: si alguien llega a un microservicio sin pasar por el gateway (por ejemplo, con los puertos de desarrollo publicados), igual lo frena. Además, solo el microservicio sabe qué rol necesita cada operación.</td>
+              <td>Validar solo en el gateway y que los microservicios confíen ciegamente.</td>
+              <td>Un único punto de control es un único punto de falla de seguridad. El PDF comprometió que el 403 lo da el microservicio con <code>@PreAuthorize</code>.</td>
+            </tr>
+            <tr>
+              <td><strong>4. Comunicación entre microservicios</strong></td>
+              <td><strong>REST sincrónico</strong> con <code>RestClient</code>, un bean por servicio destino, timeouts (2 s conexión / 5 s lectura) e interceptores que propagan el JWT y el <code>X-Correlation-ID</code>.</td>
+              <td>Es lo que piden los lineamientos (§6). Crear una solicitud <em>necesita</em> la respuesta de ms-clientes en el momento (snapshot), así que el modelo pedido-respuesta encaja.</td>
+              <td>Mensajería asíncrona (Kafka, RabbitMQ) o <code>WebClient</code> / <code>RestTemplate</code>.</td>
+              <td>Un broker suma un componente más para mantener y no está en el alcance de la materia. <code>WebClient</code> es para aplicaciones reactivas y <code>RestTemplate</code> es la API vieja (lineamiento §6).</td>
+            </tr>
+            <tr>
+              <td><strong>5. Qué pasa si un servicio dependiente se cae</strong></td>
+              <td><strong>Resilience4j</strong>: <code>@Retry</code> (2 intentos, 300 ms, solo errores de conexión) + <code>@CircuitBreaker</code> (ventana de 10, 50% de fallas, 20 s abierto) + fallback que responde <strong>503</strong>.</td>
+              <td>No quedarse colgado ni insistir contra un servicio caído. Los errores de negocio (404, 422) se ignoran en el circuito: que un cliente no exista no significa que el servicio esté caído.</td>
+              <td>Solo timeouts, o reintentar indefinidamente.</td>
+              <td>Sin circuito, cada pedido esperaría el timeout completo aunque el servicio lleve minutos caído. Reintentar sin límite multiplica la carga justo cuando el otro servicio está mal.</td>
+            </tr>
+            <tr>
+              <td><strong>6. Cálculo de distancias</strong></td>
+              <td><strong>Haversine local</strong> para filtrar candidatos (&lt; 13 km) y <strong>OSRM solo para el técnico finalista</strong> al aceptar; si OSRM falla, Haversine.</td>
+              <td>Filtrar a 50 técnicos con OSRM serían 50 pedidos por internet; con Haversine es una cuenta instantánea. El costo final sí usa la ruta real por calle (RN-8).</td>
+              <td>OSRM para todos los candidatos, o Google Maps.</td>
+              <td>Lento y dependiente de internet para cada búsqueda. Google Maps exige API key y facturación.</td>
+            </tr>
+            <tr>
+              <td><strong>7. Concurrencia (aceptar vs. vencer)</strong></td>
+              <td><strong>Bloqueo optimista</strong> con <code>@Version</code> en <code>Solicitud</code>.</td>
+              <td>Los choques son raros: no vale la pena bloquear filas. Si el técnico acepta justo cuando el scheduler vence la oferta, gana el primero en guardar y el segundo recibe un error que se maneja (422 o se ignora en el scheduler).</td>
+              <td>Bloqueo pesimista (<code>SELECT ... FOR UPDATE</code>) o <code>synchronized</code>.</td>
+              <td>El pesimista bloquea filas aunque no haya conflicto. <code>synchronized</code> solo funciona dentro de una JVM: con 2 instancias del microservicio no protegería nada.</td>
+            </tr>
+            <tr>
+              <td><strong>8. Ventana de 15 minutos</strong></td>
+              <td>Un <strong><code>@Scheduled</code> cada 30 s</strong> que busca ofertas vencidas y procesa cada una en su propia transacción. Ventana configurable (<code>OFERTA_VENTANA_MINUTOS</code>).</td>
+              <td>Simple, sobrevive a reinicios (el vencimiento está guardado en la base, en <code>ofertaExpira</code>) y para la demo se baja a 1 minuto. <code>aceptar()</code> además verifica el vencimiento al instante.</td>
+              <td>Un temporizador en memoria por oferta, o una cola con mensajes demorados.</td>
+              <td>Un temporizador en memoria se pierde si el servicio se reinicia. Una cola agrega infraestructura.</td>
+            </tr>
+            <tr>
+              <td><strong>9. Asignación del técnico</strong></td>
+              <td><strong>Automática por defecto</strong> (oferta al más cercano y pasa al siguiente si rechaza o vence) y <strong>manual opcional</strong> (<code>modoAsignacion: MANUAL</code> + <code>/elegir</code> + <code>/ofertar</code>).</td>
+              <td>F5 y RN-3 dicen que "el sistema" busca y oferta. El modo manual conserva los endpoints comprometidos en el PDF y permite mostrar cada paso en Postman.</td>
+              <td>Solo manual, o solo automática.</td>
+              <td>Solo manual no cumple F5/RN-3 tal como están escritos; solo automática esconde los pasos intermedios en la demo.</td>
+            </tr>
+            <tr>
+              <td><strong>10. Llamadas sin usuario (scheduler)</strong></td>
+              <td><strong>Cuenta de servicio</strong>: client <code>ms-solicitudes</code> con <code>client_credentials</code> y rol <code>SISTEMA</code>. Se usa solo cuando no hay un usuario en el contexto.</td>
+              <td>Cuando vence una oferta no hay ningún token de usuario, pero ms-tecnicos exige token. Es el mecanismo estándar de OAuth 2.0 para servicio a servicio. El secreto llega por variable de entorno.</td>
+              <td>Dejar los endpoints internos sin seguridad, o reutilizar un token de usuario guardado.</td>
+              <td>Sin seguridad, cualquiera en la red podría llamarlos. Un token de usuario guardado vence a los 30 minutos y mezcla identidades en la auditoría.</td>
+            </tr>
+            <tr>
+              <td><strong>11. Cálculo de costos</strong></td>
+              <td><strong>Patrón Strategy</strong>: interfaz <code>EstrategiaCosto</code> + 4 implementaciones; <code>CalculadoraCosto</code> recibe todas por inyección y elige la que <code>aplica()</code>.</td>
+              <td>Agregar una tarifa nueva es agregar una clase <code>@Component</code>, sin tocar las demás (abierto/cerrado). Las tarifas están en <code>application.yml</code>.</td>
+              <td>Un <code>if / else</code> o <code>switch</code> grande dentro del service.</td>
+              <td>Cada tarifa nueva obliga a modificar y volver a probar el método entero.</td>
+            </tr>
+            <tr>
+              <td><strong>12. Estados de la solicitud</strong></td>
+              <td><strong>Enum con mapa de transiciones</strong> (<code>EnumMap</code>) + un único método <code>transicionar()</code> que valida, cambia y registra el historial.</td>
+              <td>Toda la máquina de estados se lee en 10 líneas y es imposible cambiar de estado sin dejar rastro en el historial.</td>
+              <td>Patrón State clásico (una clase por estado).</td>
+              <td>8 clases para un comportamiento que es casi solo "a dónde se puede ir": más código sin beneficio real en este caso.</td>
+            </tr>
+            <tr>
+              <td><strong>13. Identidad en el frontend</strong></td>
+              <td>Keycloak manda <code>clienteId</code> / <code>tecnicoId</code> <strong>dentro del token</strong> (atributos de usuario + protocol mappers).</td>
+              <td>La página no deja elegir "quién soy": cada usuario ve solo sus datos y solicitudes, y no puede hacerse pasar por otro desde el navegador.</td>
+              <td>Un selector "Soy el cliente nº…" o una tabla de equivalencias en el backend.</td>
+              <td>El selector permitía ver datos ajenos. Una tabla aparte duplica información que ya vive en el proveedor de identidad.</td>
+            </tr>
+            <tr>
+              <td><strong>14. Puertos</strong></td>
+              <td>Rango <strong>473xx</strong>: frontend 47300, gateway 47380, ms 47381–47383, Keycloak 47390.</td>
+              <td>8080, 3000 y 9090 los usan muchísimos programas (Tomcat, React, Prometheus, Jenkins) y chocan. Regla fácil: 473 + número de servicio.</td>
+              <td>Los puertos del formulario (8080–8083 y 9090).</td>
+              <td>Colisiones frecuentes en las máquinas del equipo. El cambio está documentado en el README.</td>
+            </tr>
+            <tr>
+              <td><strong>15. Informe del administrador</strong></td>
+              <td><strong>Consultas agregadas</strong> en la base (<code>count</code>, <code>sum</code>, <code>avg</code>, <code>group by</code>) y armado del DTO en <code>InformeService</code>.</td>
+              <td>La base devuelve solo los totales. Escala aunque haya miles de solicitudes.</td>
+              <td>Traer todas las solicitudes y contar en Java.</td>
+              <td>Con muchos datos sería lento y consumiría memoria (y los lineamientos piden evitar <code>findAll()</code> sin paginar).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 4: KEYCLOAK Y SEGURIDAD                                     -->
+    <!-- =================================================================== -->
+    <section class="section" id="keycloak">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 04 · Autenticación y autorización</div>
+        <h2 class="section-title">Keycloak y seguridad: de la contraseña al 401 / 403</h2>
+        <p class="section-subtitle">Keycloak <strong>emite</strong> los tokens; el gateway y los microservicios <strong>los validan</strong>. Nadie en el backend ve una contraseña.</p>
+      </div>
+
+      <h3 class="card-title" style="margin-bottom:0.5rem;">🔐 Login del frontend (Authorization Code + PKCE)</h3>
+      <div class="flow-steps">
+        <div class="flow-step"><div class="flow-step-num">PASO 1</div><div class="flow-step-title">Entrar a la página</div><code>localhost:47300</code> → nginx devuelve <code>index.html</code>, <code>config.js</code> y <code>app.js</code>.</div>
+        <div class="flow-step"><div class="flow-step-num">PASO 2</div><div class="flow-step-title">keycloak.init()</div><code>onLoad: "login-required"</code>: sin sesión, keycloak-js genera un secreto (<em>code verifier</em>) y su huella SHA-256 (<em>code challenge</em>).</div>
+        <div class="flow-step"><div class="flow-step-num">PASO 3</div><div class="flow-step-title">Redirección a Keycloak</div><code>:47390/realms/patito/.../auth?client_id=bda-client&amp;code_challenge=…</code>. La pantalla de login es de Keycloak.</div>
+        <div class="flow-step"><div class="flow-step-num">PASO 4</div><div class="flow-step-title">Vuelve con un código</div>Keycloak valida usuario y contraseña y redirige a <code>:47300/?code=XYZ</code> (un solo uso, segundos de vida).</div>
+        <div class="flow-step"><div class="flow-step-num">PASO 5</div><div class="flow-step-title">Código → token</div><code>POST /token</code> con el código + el secreto original. Keycloak compara con la huella (PKCE) y devuelve el JWT.</div>
+        <div class="flow-step"><div class="flow-step-num">PASO 6</div><div class="flow-step-title">La página lee el token</div><code>realm_access.roles</code> decide las pestañas y <code>clienteId</code>/<code>tecnicoId</code> decide qué datos ve cada uno.</div>
+      </div>
+
+      <div class="grid-3" style="margin-top:1rem;">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Postman</h3><span class="badge badge-primary">password</span></div>
+          <p style="font-size:0.88rem;">Pide el token directo con usuario y contraseña: <code>POST :47390/realms/patito/protocol/openid-connect/token</code> con <code>grant_type=password</code>, <code>client_id=bda-client</code>. Lo guarda en <code>{{token_cliente}}</code>.</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Frontend</h3><span class="badge badge-success">auth code + PKCE</span></div>
+          <p style="font-size:0.88rem;">El flujo recomendado por la cátedra (§8): la app nunca ve la contraseña y un código robado no sirve sin el <em>code verifier</em>. <code>bda-client</code> exige PKCE S256.</p>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">Scheduler</h3><span class="badge badge-purple">client_credentials</span></div>
+          <p style="font-size:0.88rem;">ms-solicitudes pide un token <strong>para sí mismo</strong> (client <code>ms-solicitudes</code>, rol <code>SISTEMA</code>) cuando no hay usuario. Spring lo guarda y lo renueva al vencer.</p>
+        </div>
+      </div>
+
+      <h3 class="card-title" style="margin:1.5rem 0 0.5rem;">🛂 Cada pedido: dos controles</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Dónde</th><th>Qué revisa</th><th>Código</th><th>Si falla</th></tr></thead>
+          <tbody>
+            <tr><td><strong>API Gateway</strong> (47380)</td><td>Que haya token, que la firma sea de Keycloak, que no esté vencido y que <code>iss</code> sea <code>http://localhost:47390/realms/patito</code>.</td><td><code>SecurityConfig</code>: <code>.pathMatchers("/api/v1/**").authenticated()</code> + <code>oauth2ResourceServer().jwt()</code></td><td><span class="badge badge-danger">401</span> ProblemDetail "No autenticado"</td></tr>
+            <tr><td><strong>Microservicio</strong></td><td>Vuelve a validar el token, convierte <code>realm_access.roles</code> en <code>ROLE_X</code> y revisa el rol de la operación.</td><td><code>SecurityConfig.extraerRoles()</code> + <code>@PreAuthorize("hasAnyRole('ADMINISTRADOR','CLIENTE')")</code></td><td><span class="badge badge-warning">403</span> ProblemDetail "Acceso denegado"</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout callout-warn">
+        <strong>La "trampa" de Docker y cómo se resolvió.</strong> El token se pide desde tu máquina, así que dice <code>iss = http://localhost:47390/realms/patito</code>. Pero dentro de la red de Docker Keycloak se llama <code>keycloak:8080</code>. Solución: <code>issuer-uri</code> = <code>localhost:47390</code> (para <em>comparar</em> el issuer) y <code>jwk-set-uri</code> = <code>http://keycloak:8080/.../certs</code> (para <em>bajar</em> las claves). Además <code>KC_HOSTNAME=http://localhost:47390</code> hace que Keycloak ponga siempre ese issuer, incluso en el token de la cuenta de servicio.
+      </div>
+
+      <h3 class="card-title" style="margin:1.5rem 0 0.5rem;">👥 Quién puede qué</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Operación</th><th>ADMINISTRADOR</th><th>CLIENTE</th><th>TECNICO</th><th>SISTEMA</th></tr></thead>
+          <tbody>
+            <tr><td><code>POST /clientes</code>, <code>PUT /clientes/{id}</code></td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td><code>GET /clientes</code> (lista), <code>DELETE /clientes/{id}</code></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+            <tr><td><code>GET /clientes/{id}</code></td><td>✅</td><td>✅</td><td>❌</td><td>✅</td></tr>
+            <tr><td><code>POST /tecnicos</code></td><td>✅</td><td>❌ (EN-03)</td><td>❌</td><td>❌</td></tr>
+            <tr><td><code>GET /tecnicos</code>, <code>/tecnicos/{id}</code>, <code>/candidatos</code>, catálogos</td><td>✅</td><td>✅</td><td>✅</td><td>✅</td></tr>
+            <tr><td><code>PATCH /tecnicos/{id}/disponibilidad</code></td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+            <tr><td>Crear solicitud, <code>/elegir</code>, <code>/ofertar</code>, aprobar presupuesto, cancelar</td><td>✅</td><td>✅</td><td>❌</td><td>❌</td></tr>
+            <tr><td>Aceptar, rechazar, presupuesto, finalizar, reprogramar, reanudar, derivar</td><td>✅</td><td>❌</td><td>✅</td><td>❌</td></tr>
+            <tr><td><code>GET /solicitudes</code>, detalle, historial</td><td>✅</td><td>✅</td><td>✅</td><td>❌</td></tr>
+            <tr><td><code>GET /solicitudes/informe</code></td><td>✅</td><td>❌</td><td>❌</td><td>❌</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <strong>Usuarios de prueba</strong> (realm <code>patito</code>, importado de <code>keycloak/realm-export.json</code>):
+        <code>admin1/admin123</code> (ADMINISTRADOR) · <code>cliente1/cliente123</code> (CLIENTE, <code>clienteId=1</code>, Carlos García) · <code>tecnico1/tecnico123</code> (TECNICO, <code>tecnicoId=1</code>, Juan Pérez) · <code>tecnico2/tecnico123</code> (TECNICO, <code>tecnicoId=2</code>, Ana Gómez). Los tokens duran 30 minutos.
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 5: PATRONES DE DISEÑO                                       -->
+    <!-- =================================================================== -->
+    <section class="section" id="patrones">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 05 · Patrones</div>
+        <h2 class="section-title">Patrones de diseño: cuál, dónde y por qué</h2>
+        <p class="section-subtitle">Si preguntan «¿usaron algún patrón?», arrancá por Strategy (es el más claro) y después nombrá los de arquitectura.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card"><div class="card-header"><h3 class="card-title">Strategy ⭐</h3><span class="badge badge-primary">GoF</span></div><p style="font-size:0.86rem;"><code>EstrategiaCosto</code> + <code>EstrategiaEstandar</code>, <code>EstrategiaPrioridad</code>, <code>EstrategiaFueraHorario</code>, <code>EstrategiaCombinada</code>. <code>CalculadoraCosto</code> recibe una <code>List&lt;EstrategiaCosto&gt;</code> y elige la que <code>aplica()</code>.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Template Method</h3><span class="badge badge-primary">GoF</span></div><p style="font-size:0.86rem;">El método <code>default calcular()</code> de <code>EstrategiaCosto</code> fija el esqueleto (base + recargo); cada estrategia solo completa <code>porcentajeRecargo()</code>.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Máquina de estados</h3><span class="badge badge-primary">State (tabla)</span></div><p style="font-size:0.86rem;"><code>EstadoSolicitud.TRANSICIONES</code> + <code>puedePasarA()</code>; solo <code>transicionar()</code> cambia el estado y siempre deja historial (RN-7).</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Repository</h3><span class="badge badge-success">Spring Data</span></div><p style="font-size:0.86rem;">Interfaces <code>…Repository extends JpaRepository</code>: consultas derivadas (<code>existsByDni</code>) y <code>@Query</code> JPQL (agregados del informe).</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">DTO</h3><span class="badge badge-success">Capas</span></div><p style="font-size:0.86rem;">Records en <code>dtos/</code>: la API nunca expone entidades JPA. <code>ClienteResponse.desde(cliente)</code> es un <em>factory method</em>.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Builder</h3><span class="badge badge-success">Lombok</span></div><p style="font-size:0.86rem;"><code>Solicitud.builder().clienteId(1)…build()</code> con <code>@Builder</code>; <code>@Builder.Default</code> para inicializar colecciones.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Facade + Adapter</h3><span class="badge badge-primary">GoF</span></div><p style="font-size:0.86rem;"><code>ClientesClient</code>/<code>TecnicosClient</code> esconden HTTP, timeouts y resiliencia detrás de <code>obtener(id)</code>. <code>OsrmGeoService</code> adapta la API de OSRM a nuestra interfaz <code>GeoService</code>.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Chain of Responsibility</h3><span class="badge badge-primary">GoF</span></div><p style="font-size:0.86rem;">Filtros (<code>CorrelationIdFilter</code> → Spring Security → controller) e interceptores de <code>RestClient</code>: cada eslabón hace lo suyo y llama a <code>chain.doFilter()</code>.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Proxy</h3><span class="badge badge-primary">AOP</span></div><p style="font-size:0.86rem;"><code>@Transactional</code>, <code>@PreAuthorize</code>, <code>@Retry</code> y <code>@CircuitBreaker</code> funcionan porque Spring envuelve el bean. Por eso <code>OfertaScheduler</code> está en otra clase que <code>SolicitudService</code>.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">API Gateway</h3><span class="badge badge-purple">Microservicios</span></div><p style="font-size:0.86rem;">Único punto de entrada: autenticación, ruteo, correlation id y Swagger unificado.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Database per Service + Snapshot</h3><span class="badge badge-purple">Microservicios</span></div><p style="font-size:0.86rem;">Una base H2 por servicio; la solicitud copia los datos del cliente y del técnico que necesita.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Circuit Breaker + Retry + Fallback</h3><span class="badge badge-purple">Resiliencia</span></div><p style="font-size:0.86rem;">Resilience4j en los clientes REST; fallback 503. <code>OsrmGeoService</code> degrada a Haversine.</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Correlation ID</h3><span class="badge badge-purple">Observabilidad</span></div><p style="font-size:0.86rem;"><code>X-Correlation-ID</code> nace en el gateway, viaja en cada llamada y se guarda en el MDC (<code>[cid:…]</code> en cada log).</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Optimistic Locking</h3><span class="badge badge-purple">Datos</span></div><p style="font-size:0.86rem;"><code>@Version</code> en <code>Solicitud</code>: el segundo que guarda sobre la misma versión falla en vez de pisar al primero (RN-4).</p></div>
+        <div class="card"><div class="card-header"><h3 class="card-title">Service Account</h3><span class="badge badge-purple">Seguridad</span></div><p style="font-size:0.86rem;">Client <code>ms-solicitudes</code> con <code>client_credentials</code> y rol <code>SISTEMA</code> para el scheduler.</p></div>
+      </div>
+
+      <div class="callout callout-danger">
+        <strong>No usamos Observer / Publish-Subscribe.</strong> No hay eventos ni colas: todo es REST sincrónico. Si preguntan, es la mejora natural (por ejemplo, notificar al técnico por una cola en vez de que consulte "Mis trabajos").
+      </div>
+
+      <div class="card" style="margin-top:1rem;">
+        <div class="card-header"><h3 class="card-title">🧪 Ejercicio: agregar una tarifa "FERIADO_DOBLE"</h3><span class="badge badge-warning">Práctica</span></div>
+        <p style="font-size:0.9rem;">Si el profe pide: «agreguen una tarifa que duplique la visita en feriados», ¿qué tocarías?</p>
+        <div class="reveal-box">
+          <button class="reveal-btn" type="button" data-reveal="ej-strategy">👁️ Ver respuesta</button>
+          <div class="reveal-content" id="ej-strategy">
+            <p>1) Agregar el dato al contexto si hace falta (por ejemplo, <code>esFeriado</code> en <code>ContextoCosto</code>). 2) Crear <code>EstrategiaFeriadoDoble implements EstrategiaCosto</code> con <code>@Component</code>, <code>nombre()</code> = <code>"FERIADO_DOBLE"</code>, <code>aplica()</code> = <code>ctx.esFeriado()</code> y <code>porcentajeRecargo()</code> = <code>BigDecimal.ONE</code> (+100%). 3) Ajustar las condiciones de <code>EstrategiaFueraHorario</code> y <code>EstrategiaCombinada</code> para que sigan siendo excluyentes. <strong><code>CalculadoraCosto</code> y <code>SolicitudService</code> no se tocan</strong>: Spring inyecta la nueva estrategia en la lista sola. Eso es el principio abierto/cerrado.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 6: POSTMAN Y OCULTAR DATOS                                  -->
+    <!-- =================================================================== -->
+    <section class="section" id="postman">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 06 · Verificación</div>
+        <h2 class="section-title">Postman y cómo se ocultan los datos sensibles</h2>
+        <p class="section-subtitle">La colección <code>postman/Tecnica-Patito.postman_collection.json</code> + el entorno <code>Tecnica-Patito.postman_environment.json</code>. Corrida automática (00 a 05): <strong>74 peticiones, 153 verificaciones, 0 fallas</strong>.</p>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Carpeta</th><th>Qué demuestra</th><th>Escenarios</th></tr></thead>
+          <tbody>
+            <tr><td><code>00 – Seguridad</code></td><td>Pide los 3 tokens (admin, cliente, técnico) y los guarda en variables.</td><td>F1</td></tr>
+            <tr><td><code>01 – Clientes</code></td><td>Listar, consultar, registrar (DNI al azar), modificar, eliminar, 404.</td><td>F2</td></tr>
+            <tr><td><code>02 – Técnicos</code></td><td>Listar, candidatos (solo Juan para Redes), catálogos, registrar, disponibilidad.</td><td>F3, RN-2, RN-9</td></tr>
+            <tr><td><code>03 – Solicitudes</code></td><td>Listado, <strong>informe</strong> (admin 200 / cliente 403), estrategia COMBINADA, sin candidatos, snapshot, rechazo de oferta.</td><td>RN-10, RN-11</td></tr>
+            <tr><td><code>04 – Flujo principal (manual)</code></td><td>Crear → elegir → ofertar → aceptar → presupuesto → aprobar → finalizar → historial.</td><td>EP-01 a EP-05</td></tr>
+            <tr><td><code>04B – Flujo principal (automático)</code></td><td>Nace ofertada a Juan; Juan rechaza y el sistema la oferta sola a Ana; caso sin candidatos.</td><td>F5, RN-3</td></tr>
+            <tr><td><code>05 – Escenarios negativos</code></td><td>Sin token, token inválido, CLIENTE crea técnico, sin tipos, cliente inexistente, técnico al límite, aprobar en PENDIENTE, DNI duplicado.</td><td>EN-01 a EN-06, EN-08, EN-10</td></tr>
+            <tr><td><code>06 – Escenarios manuales</code></td><td>Oferta vencida (con <code>OFERTA_VENTANA_MINUTOS=1</code>), vencimiento con reoferta automática, servicio caído (<code>docker stop ms-clientes</code>).</td><td>EN-07, EN-07B, EN-09</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="code-container">
+        <div class="code-header"><span>bash · correr la colección completa</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>npx newman run postman/Tecnica-Patito.postman_collection.json \
+  -e postman/Tecnica-Patito.postman_environment.json \
+  --folder "00 – Seguridad" --folder "01 – Clientes" --folder "02 – Técnicos" \
+  --folder "03 – Solicitudes" --folder "04 – Flujo principal (modo manual)" \
+  --folder "04B – Flujo principal (modo automático)" --folder "05 – Escenarios negativos"</code></pre>
+      </div>
+
+      <h3 class="card-title" style="margin:1.5rem 0 0.5rem;">🙈 Cómo se ocultan los datos</h3>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">En Postman</h3></div>
+          <ul class="clean-list" style="font-size:0.88rem;">
+            <li>Los tokens <strong>no están escritos</strong> en ninguna petición: se piden en la carpeta 00 y se guardan en variables (<code>{{token_admin}}</code>, <code>{{token_cliente}}</code>, <code>{{token_tecnico}}</code>).</li>
+            <li>Las URLs salen del <strong>entorno</strong> (<code>{{gateway_url}}</code>, <code>{{keycloak_url}}</code>): cambiar de máquina no obliga a editar peticiones.</li>
+            <li>Los IDs creados (<code>{{solicitudId}}</code>) los guarda un script de test; DNI y legajos se generan al azar en el pre-request.</li>
+            <li>Al exportar la colección, los tokens quedan vacíos: duran 30 minutos y se vuelven a pedir.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">En el sistema</h3></div>
+          <ul class="clean-list" style="font-size:0.88rem;">
+            <li><strong>Secretos por variables de entorno</strong> (<code>.env</code>, que no se sube a git; se sube <code>.env.example</code>): contraseña de admin de Keycloak y secreto de la cuenta de servicio.</li>
+            <li><strong>DTOs</strong>: la API nunca devuelve entidades JPA (por ejemplo, <code>@Version</code> o colecciones internas no salen tal cual).</li>
+            <li><strong>Errores sin detalles internos</strong>: el 500 y los errores de base responden un mensaje genérico + <code>correlationId</code>; el stack trace queda solo en el log.</li>
+            <li><strong>Logs sin datos sensibles</strong>: se loguean ids, nunca el token ni datos personales; el interceptor de llamadas salientes registra método, URI, status y tiempo.</li>
+            <li><strong>Cada usuario ve lo suyo en el frontend</strong>: <code>clienteId</code>/<code>tecnicoId</code> salen del token; el cliente no ve la lista de técnicos ni solicitudes ajenas.</li>
+          </ul>
+        </div>
+      </div>
+      <div class="callout callout-warn">
+        <strong>Ser honestos si preguntan:</strong> el filtro "cada uno ve lo suyo" está en el <em>frontend</em>. Por la API, un CLIENTE todavía puede pedir <code>GET /api/v1/tecnicos</code> y la lista completa de solicitudes, porque así quedó comprometido en el formulario del TPI. Cerrarlo en el backend sería filtrar en ms-solicitudes por el <code>clienteId</code>/<code>tecnicoId</code> del token.
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 7: CÓDIGO LÍNEA POR LÍNEA                                   -->
+    <!-- =================================================================== -->
+    <section class="section" id="codigo">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 07 · Código clave</div>
+        <h2 class="section-title">Código línea por línea (los 6 fragmentos que más preguntan)</h2>
+        <p class="section-subtitle">Código real del proyecto. La explicación completa de cada archivo está en <code>docs/codigo/</code>.</p>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header"><h3 class="card-title">1. La máquina de estados</h3><span class="badge badge-primary">EstadoSolicitud.java</span></div>
+        <div class="code-container">
+          <div class="code-header"><span>java</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>public static final Set&lt;EstadoSolicitud&gt; EN_ESPERA = EnumSet.of(OFERTADA, ASIGNADA, REPROGRAMADA);
+
+private static final Map&lt;EstadoSolicitud, Set&lt;EstadoSolicitud&gt;&gt; TRANSICIONES = new EnumMap&lt;&gt;(EstadoSolicitud.class);
+
+static {
+    TRANSICIONES.put(PENDIENTE, EnumSet.of(OFERTADA, CANCELADA));
+    TRANSICIONES.put(OFERTADA, EnumSet.of(ASIGNADA, PENDIENTE, CANCELADA));
+    TRANSICIONES.put(ASIGNADA, EnumSet.of(EN_CURSO, CANCELADA));
+    TRANSICIONES.put(EN_CURSO, EnumSet.of(FINALIZADA, REPROGRAMADA, DERIVADA));
+    TRANSICIONES.put(REPROGRAMADA, EnumSet.of(EN_CURSO));
+    TRANSICIONES.put(DERIVADA, EnumSet.of(PENDIENTE));
+    TRANSICIONES.put(CANCELADA, EnumSet.noneOf(EstadoSolicitud.class));
+    TRANSICIONES.put(FINALIZADA, EnumSet.noneOf(EstadoSolicitud.class));
+}
+
+public boolean puedePasarA(EstadoSolicitud destino) {
+    return TRANSICIONES.get(this).contains(destino);
+}</code></pre>
+        </div>
+        <div class="line-explain-list">
+          <div class="line-explain-item"><span class="line-ref">EN_ESPERA</span><span>Los estados que ocupan la agenda del técnico. RN-5 cuenta cuántas tiene en este conjunto (máximo 2).</span></div>
+          <div class="line-explain-item"><span class="line-ref">TRANSICIONES</span><span>Para cada estado, a cuáles se puede pasar. <code>EnumMap</code>/<code>EnumSet</code> son colecciones rápidas especiales para enums.</span></div>
+          <div class="line-explain-item"><span class="line-ref">static { }</span><span>Bloque estático: se ejecuta una sola vez al cargar la clase y llena el mapa.</span></div>
+          <div class="line-explain-item"><span class="line-ref">noneOf(...)</span><span>CANCELADA y FINALIZADA son estados finales: no tienen salida.</span></div>
+          <div class="line-explain-item"><span class="line-ref">puedePasarA</span><span><code>this</code> es el estado actual; responde si el destino está permitido. <code>transicionar()</code> lo usa antes de cambiar nada (RN-7).</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header"><h3 class="card-title">2. La oferta automática</h3><span class="badge badge-primary">SolicitudService.java</span></div>
+        <div class="code-container">
+          <div class="code-header"><span>java</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>private void ofertarAutomaticamente(Solicitud solicitud) {
+    List&lt;CandidatoDto&gt; candidatos;
+    try {
+        candidatos = tecnicosClient.candidatos(solicitud.getEspecialidadId(), solicitud.getLatitud(),
+                solicitud.getLongitud());
+    } catch (ServicioNoDisponibleException e) {
+        registrarHistorial(solicitud, PENDIENTE, PENDIENTE, "No se pudo buscar técnicos (MS-Técnicos no disponible). "
+                + "Queda en espera", USUARIO_SISTEMA);
+        return;
+    }
+    Optional&lt;CandidatoDto&gt; elegido = candidatos.stream()
+            .filter(c -&gt; !solicitud.getTecnicosDescartados().contains(c.tecnicoId()))
+            .filter(c -&gt; !alcanzoLimiteEnEspera(c.tecnicoId()))
+            .findFirst();
+    if (elegido.isEmpty()) {
+        log.warn("ALERTA ADMINISTRADOR: la solicitud {} no tiene técnicos candidatos disponibles", solicitud.getId());
+        registrarHistorial(solicitud, PENDIENTE, PENDIENTE, "Sin técnicos candidatos disponibles: ...", USUARIO_SISTEMA);
+        return;
+    }
+    CandidatoDto tecnico = elegido.get();
+    solicitud.setTecnicoId(tecnico.tecnicoId());
+    solicitud.setTecnicoNombre(tecnico.nombre() + " " + tecnico.apellido());
+    solicitud.setOfertaExpira(LocalDateTime.now().plusMinutes(ventanaMinutos));
+    transicionar(solicitud, OFERTADA, "Oferta automática al técnico más cercano ...", USUARIO_SISTEMA);
+}</code></pre>
+        </div>
+        <div class="line-explain-list">
+          <div class="line-explain-item"><span class="line-ref">candidatos(...)</span><span>Llama a ms-tecnicos: vienen filtrados (disponible + certificación + &lt; 13 km) y ordenados del más cercano al más lejano.</span></div>
+          <div class="line-explain-item"><span class="line-ref">catch 503</span><span>Si ms-tecnicos está caído, la solicitud <strong>no se pierde</strong>: queda PENDIENTE con una nota en el historial.</span></div>
+          <div class="line-explain-item"><span class="line-ref">filter descartados</span><span>Nunca se re-oferta a quien ya rechazó, dejó vencer o derivó esta solicitud.</span></div>
+          <div class="line-explain-item"><span class="line-ref">filter límite</span><span>RN-5: se saltea al técnico que ya tiene 2 en espera.</span></div>
+          <div class="line-explain-item"><span class="line-ref">findFirst()</span><span>El primero que pasa los filtros = el más cercano disponible.</span></div>
+          <div class="line-explain-item"><span class="line-ref">isEmpty()</span><span>RN-2: sin candidatos queda en espera y se alerta al administrador.</span></div>
+          <div class="line-explain-item"><span class="line-ref">plusMinutes</span><span>RN-3: ventana de 15 minutos (configurable).</span></div>
+          <div class="line-explain-item"><span class="line-ref">USUARIO_SISTEMA</span><span>En el historial queda que la oferta la hizo el sistema, no la persona.</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header"><h3 class="card-title">3. Cliente REST con resiliencia</h3><span class="badge badge-primary">ClientesClient.java</span></div>
+        <div class="code-container">
+          <div class="code-header"><span>java</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>@CircuitBreaker(name = "clientes")
+@Retry(name = "clientes", fallbackMethod = "sinServicio")
+public ClienteDto obtener(Long clienteId) {
+    try {
+        return restClient.get()
+                .uri("/api/v1/clientes/{clienteId}", clienteId)
+                .retrieve()
+                .body(ClienteDto.class);
+    } catch (HttpClientErrorException.NotFound e) {
+        throw new RecursoNoEncontradoException("No existe el cliente con id " + clienteId);
+    } catch (HttpClientErrorException e) {
+        throw RemoteErrors.traducir("ms-clientes", e);
+    }
+}
+
+private ClienteDto sinServicio(Long clienteId, Throwable causa) {
+    RemoteErrors.relanzarSiEsDeNegocio(causa);
+    log.warn("ms-clientes no disponible al consultar el cliente {}: {}", clienteId, causa.toString());
+    throw new ServicioNoDisponibleException("El servicio de clientes no se encuentra disponible", causa);
+}</code></pre>
+        </div>
+        <div class="line-explain-list">
+          <div class="line-explain-item"><span class="line-ref">@CircuitBreaker</span><span>Mira las últimas 10 llamadas; con 50% de fallas "salta la térmica" 20 s y falla al instante sin llamar.</span></div>
+          <div class="line-explain-item"><span class="line-ref">@Retry</span><span>Reintenta una vez (300 ms) solo ante errores de conexión; si sigue fallando llama al fallback.</span></div>
+          <div class="line-explain-item"><span class="line-ref">restClient.get()</span><span>GET a <code>http://ms-clientes:47383/...</code>; el interceptor ya agregó el JWT y el correlation id.</span></div>
+          <div class="line-explain-item"><span class="line-ref">NotFound</span><span>El 404 remoto se traduce a nuestro 404 (EN-05).</span></div>
+          <div class="line-explain-item"><span class="line-ref">sinServicio</span><span>Fallback: los errores de negocio se relanzan tal cual; los de conexión se convierten en <strong>503</strong> (EN-09) conservando la causa.</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header"><h3 class="card-title">4. Propagar token y correlation id</h3><span class="badge badge-primary">RestClientConfig.java</span></div>
+        <div class="code-container">
+          <div class="code-header"><span>java</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>private ClientHttpRequestInterceptor propagarContexto() {
+    return (request, body, execution) -&gt; {
+        String correlationId = MDC.get(CorrelationIdFilter.MDC_KEY);
+        if (correlationId != null) {
+            request.getHeaders().set(CorrelationIdFilter.HEADER, correlationId);
+        }
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof JwtAuthenticationToken jwt) {
+            request.getHeaders().setBearerAuth(jwt.getToken().getTokenValue());
+        } else {
+            String tokenServicio = tokenCuentaServicio();
+            if (tokenServicio != null) {
+                request.getHeaders().setBearerAuth(tokenServicio);
+            }
+        }
+        return execution.execute(request, body);
+    };
+}</code></pre>
+        </div>
+        <div class="line-explain-list">
+          <div class="line-explain-item"><span class="line-ref">MDC.get</span><span>Saca el correlation id de la "mochila" del hilo y lo manda en <code>X-Correlation-ID</code>: el otro servicio loguea el mismo número.</span></div>
+          <div class="line-explain-item"><span class="line-ref">SecurityContext</span><span>¿Hay un usuario atendido en este pedido?</span></div>
+          <div class="line-explain-item"><span class="line-ref">JwtAuthenticationToken</span><span>Sí: se reenvía <strong>su mismo token</strong>; el otro servicio aplica sus reglas con ese usuario.</span></div>
+          <div class="line-explain-item"><span class="line-ref">else</span><span>No (scheduler): se usa el token de la cuenta de servicio (<code>client_credentials</code>, rol SISTEMA).</span></div>
+          <div class="line-explain-item"><span class="line-ref">execute</span><span>Envía el pedido con los headers agregados.</span></div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1.25rem;">
+        <div class="card-header"><h3 class="card-title">5. El esqueleto del costo (Strategy + Template Method)</h3><span class="badge badge-primary">EstrategiaCosto.java</span></div>
+        <div class="code-container">
+          <div class="code-header"><span>java</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>default DetalleCosto calcular(ContextoCosto contexto, Tarifas tarifas) {
+    BigDecimal base = tarifas.montoFijo()
+            .add(tarifas.porKm().multiply(BigDecimal.valueOf(contexto.distanciaKm())))
+            .setScale(2, RoundingMode.HALF_UP);
+    BigDecimal recargo = base.multiply(porcentajeRecargo(tarifas)).setScale(2, RoundingMode.HALF_UP);
+    return new DetalleCosto(nombre(), base, recargo, base.add(recargo));
+}</code></pre>
+        </div>
+        <div class="line-explain-list">
+          <div class="line-explain-item"><span class="line-ref">default</span><span>Método ya implementado en la interfaz: todas las estrategias lo heredan.</span></div>
+          <div class="line-explain-item"><span class="line-ref">base</span><span>$5000 + km × $800 (valores de <code>application.yml</code>). Ej.: Juan a 0.58 km → $5464,00.</span></div>
+          <div class="line-explain-item"><span class="line-ref">BigDecimal</span><span>Plata exacta (lineamiento §4): <code>double</code> tiene errores de redondeo.</span></div>
+          <div class="line-explain-item"><span class="line-ref">porcentajeRecargo</span><span>Lo único que cambia entre estrategias: 0, 0.30, 0.50 o 0.80.</span></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">6. El primer control en el gateway</h3><span class="badge badge-primary">api-gateway · SecurityConfig.java</span></div>
+        <div class="code-container">
+          <div class="code-header"><span>java</span><button class="copy-btn" type="button">Copiar</button></div>
+<pre><code>.authorizeExchange(auth -&gt; auth
+        .pathMatchers("/actuator/health/**", "/actuator/info").permitAll()
+        .pathMatchers("/swagger-ui.html", "/swagger-ui/**", "/webjars/**",
+                "/v3/api-docs/**", "/docs/**").permitAll()
+        .pathMatchers("/api/v1/**").authenticated()
+        .anyExchange().denyAll())
+.oauth2ResourceServer(oauth2 -&gt; oauth2
+        .jwt(jwt -&gt; jwt.jwtAuthenticationConverter(jwtAuthConverter()))
+        .authenticationEntryPoint((exchange, ex) -&gt; escribirProblema(exchange, HttpStatus.UNAUTHORIZED,
+                "No autenticado",
+                "Se requiere un token JWT válido en el header Authorization: Bearer &lt;token&gt;")))</code></pre>
+        </div>
+        <div class="line-explain-list">
+          <div class="line-explain-item"><span class="line-ref">permitAll</span><span>Health (para los healthchecks de Docker) y Swagger quedan libres.</span></div>
+          <div class="line-explain-item"><span class="line-ref">authenticated()</span><span>Toda la API pide un token válido de cualquier rol: primer punto de control (§7).</span></div>
+          <div class="line-explain-item"><span class="line-ref">denyAll()</span><span>Cualquier otra ruta se rechaza: no se revela nada.</span></div>
+          <div class="line-explain-item"><span class="line-ref">jwt(...)</span><span>Valida firma (claves de <code>jwk-set-uri</code>), vencimiento e issuer.</span></div>
+          <div class="line-explain-item"><span class="line-ref">entryPoint</span><span>Sin token o inválido → 401 como ProblemDetail (no un cuerpo vacío).</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 8: BANCO DE PREGUNTAS                                       -->
+    <!-- =================================================================== -->
+    <section class="section" id="preguntas">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 08 · Repaso</div>
+        <h2 class="section-title">Banco de 32 preguntas</h2>
+        <p class="section-subtitle">Abrí cada pregunta, respondela en voz alta y después compará. Marcá <em>Repasada</em> para llevar el progreso (se guarda en este navegador).</p>
+      </div>
+
+      <div class="filter-bar">
+        <input class="search-input" id="qa-search" type="search" placeholder="Buscar (ej. 401, scheduler, Strategy)…" />
+        <div class="category-pills" id="qa-pills">
+          <button class="pill-btn active" type="button" data-cat="todas">Todas</button>
+          <button class="pill-btn" type="button" data-cat="arquitectura">Arquitectura</button>
+          <button class="pill-btn" type="button" data-cat="seguridad">Seguridad</button>
+          <button class="pill-btn" type="button" data-cat="negocio">Negocio</button>
+          <button class="pill-btn" type="button" data-cat="datos">Datos</button>
+          <button class="pill-btn" type="button" data-cat="resiliencia">Resiliencia</button>
+          <button class="pill-btn" type="button" data-cat="docker">Docker</button>
+          <button class="pill-btn" type="button" data-cat="pruebas">Pruebas</button>
+        </div>
+      </div>
+
+      <div class="qa-list" id="qa-list"></div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- SECCIÓN 9: PREGUNTAS TRAMPA                                         -->
+    <!-- =================================================================== -->
+    <section class="section" id="trampa">
+      <div class="section-header">
+        <div class="section-eyebrow">Sección 09 · Preguntas trampa</div>
+        <h2 class="section-title">Preguntas trampa: qué contestar y qué NO decir</h2>
+        <p class="section-subtitle">Son las que buscan una contradicción entre el PDF, los lineamientos y el código. Lo más seguro es ser honestos y mostrar que la decisión fue consciente.</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <h3 class="card-title">«El PDF dice /api y puertos 8080–8083. ¿Por qué el sistema usa /api/v1 y 473xx?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> <code>/api/v1</code> es lineamiento de la cátedra (§3, versionado en la URI). Los puertos se cambiaron porque 8080/9090/3000 chocaban con otros programas. Las dos cosas están en la tabla de decisiones del README.</div>
+          <div class="callout callout-danger"><strong>No decir:</strong> «nos olvidamos de actualizar el PDF».</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«Los lineamientos dicen H2 en memoria con create-drop. ¿Por qué en archivo?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> decisión del equipo: con archivo los datos sobreviven a los reinicios (útil para EN-07, que reinicia ms-solicitudes). Por eso el DataLoader es idempotente (<code>if (count() &gt; 0) return;</code>) y se usa <code>ddl-auto: update</code>. Para empezar limpio: <code>docker compose down -v</code>.</div>
+          <div class="callout callout-danger"><strong>No decir:</strong> «en memoria no funcionaba».</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«Si el gateway ya valida el token, ¿no es redundante validarlo en cada microservicio?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> es defensa en profundidad. El gateway solo sabe si el token es válido (401); el rol de cada operación lo sabe el microservicio (403). Y si alguien llega al microservicio sin pasar por el gateway, igual lo frena. Validar cuesta poco: las claves públicas se bajan una vez.</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«¿Qué pasa si se cae Keycloak?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> nadie puede <em>iniciar sesión</em> ni renovar tokens, pero los tokens ya emitidos siguen validándose hasta que vencen (30 min), porque gateway y microservicios guardaron las claves públicas. El scheduler no podría obtener el token de servicio y la reoferta automática fallaría (queda PENDIENTE con nota en el historial).</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«¿Qué pasa si el técnico acepta justo cuando vence la oferta?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> <code>aceptar()</code> verifica <code>ofertaExpira</code> al instante (422 si venció). Si el scheduler y el técnico guardan a la vez, <code>@Version</code> hace que gane uno solo; el scheduler atrapa <code>ObjectOptimisticLockingFailureException</code> y respeta la aceptación.</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«El frontend filtra en el navegador. ¿Eso es seguro?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> el frontend no es una barrera de seguridad: la identidad sale del token (no se puede cambiar desde la página), pero por la API un CLIENTE todavía puede listar técnicos y solicitudes, porque así lo comprometió el formulario. La mejora es filtrar en ms-solicitudes por el claim del token.</div>
+          <div class="callout callout-danger"><strong>No decir:</strong> «sí, es totalmente seguro».</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«¿Se valida que no se creen solicitudes repetidas?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> no hay una regla de "solicitud duplicada" (no está entre RN-1 a RN-9). Lo que sí se evita es la duplicidad que menciona el PDF: dos técnicos asignados a la misma solicitud (RN-4 + <code>@Version</code>). La mejora sería un 422 si el mismo cliente tiene otra solicitud abierta del mismo equipo y especialidad.</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«¿Tienen tests unitarios?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> no: los lineamientos (§11) dicen que en el TPI no se requieren y que se verifica con Postman. La colección tiene 153 verificaciones automáticas y se corre con Newman.</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«El secreto de la cuenta de servicio está en el realm-export.json. ¿No es inseguro?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> es un valor <em>de desarrollo</em>, igual que las contraseñas de los usuarios de prueba. En la aplicación llega por variable de entorno (<code>MS_SOLICITUDES_CLIENT_SECRET</code>, desde el <code>.env</code>). En producción se generaría en Keycloak y se cargaría solo como secreto del entorno.</div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">«¿Por qué no usaron Kafka/RabbitMQ para avisar al técnico?»</h3>
+          <div class="callout callout-tip"><strong>Respuesta:</strong> los lineamientos piden REST con RestClient y el alcance del PDF excluye notificaciones (se simulan con estados e historial). Es la evolución natural (patrón Observer / eventos), pero suma un broker que mantener.</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ---------------------------------------------------------------- banco de preguntas
+    const PREGUNTAS = [
+      ["arquitectura", "¿Qué microservicios tiene el sistema y qué hace cada uno?", "ms-clientes (47383): padrón de clientes con coordenadas. ms-tecnicos (47382): técnicos, certificaciones, zonas y búsqueda de candidatos. ms-solicitudes (47381): ciclo de vida, ofertas, scheduler, costos e informe. Más el api-gateway (47380), la librería commons-geo, Keycloak (47390) y el frontend (47300)."],
+      ["arquitectura", "¿Para qué sirve el API Gateway?", "Es el único punto de entrada: genera el X-Correlation-ID, valida el JWT (401), rutea por path al microservicio correcto y publica el Swagger unificado. Desventajas: punto único de falla y un componente más (lineamiento §7)."],
+      ["arquitectura", "¿Por qué Spring MVC en los microservicios y WebFlux en el gateway?", "Los lineamientos piden microservicios bloqueantes (más simples). Spring Cloud Gateway es reactivo por diseño (Netty): pocos hilos atienden muchos pedidos mientras esperan a los microservicios."],
+      ["arquitectura", "¿Qué es commons-geo y cómo lo usan los servicios?", "Una librería Maven con Haversine, la interfaz GeoService y OsrmGeoService. Se registra sola con @AutoConfiguration (archivo AutoConfiguration.imports). ms-tecnicos usa Haversine para filtrar; ms-solicitudes usa GeoService al aceptar."],
+      ["arquitectura", "¿Cómo se comunica ms-solicitudes con los otros servicios?", "Con RestClient (un bean por destino, baseUrl desde la configuración, por nombre de servicio en Docker), timeouts de 2 s/5 s e interceptores que propagan el JWT y el correlation id y loguean método, URI, status y tiempo."],
+      ["seguridad", "¿Qué diferencia hay entre 401 y 403?", "401: no sé quién sos (sin token, vencido o firma inválida); lo da el gateway. 403: sé quién sos pero tu rol no puede hacer esto; lo da el microservicio con @PreAuthorize."],
+      ["seguridad", "¿Cómo obtienen los roles del token?", "Keycloak los manda en realm_access.roles. extraerRoles() los convierte en authorities con prefijo ROLE_ y en mayúsculas (CLIENTE → ROLE_CLIENTE), que es lo que espera hasRole()."],
+      ["seguridad", "¿Por qué el issuer-uri y el jwk-set-uri son distintos en Docker?", "El token dice iss = localhost:47390 (se pidió desde el host), pero adentro de Docker Keycloak es keycloak:8080. Se compara el issuer con localhost:47390 y las claves se bajan de keycloak:8080. KC_HOSTNAME fija siempre ese issuer."],
+      ["seguridad", "¿Qué flujos OAuth2 se usan y dónde?", "Password grant en Postman (simple, comparte credenciales), Authorization Code + PKCE en el frontend (la app nunca ve la contraseña) y Client Credentials para la cuenta de servicio de ms-solicitudes."],
+      ["seguridad", "¿Qué es PKCE y qué problema resuelve?", "La app genera un secreto al azar y manda solo su hash al pedir el código. Para cambiar el código por el token debe mostrar el secreto original. Si alguien roba el código en la redirección, no puede usarlo."],
+      ["seguridad", "¿Cómo sabe el frontend qué cliente o técnico es el usuario?", "Keycloak guarda los atributos clienteId/tecnicoId en el usuario y un protocol mapper los agrega como claims del token. La página los lee de keycloak.tokenParsed; no se pueden elegir ni cambiar."],
+      ["negocio", "Contame el flujo principal de una solicitud.", "Crear (PENDIENTE, snapshot del cliente) → ofertar al técnico (OFERTADA, 15 min) → el técnico acepta (ASIGNADA, se calcula el costo con OSRM) → carga presupuesto → el cliente aprueba (EN_CURSO) → finalizar (FINALIZADA). Cada paso queda en el historial."],
+      ["negocio", "¿Qué diferencia hay entre el modo automático y el manual?", "AUTOMATICA (por defecto): al crear, el sistema oferta solo al candidato más cercano; si rechaza o vence, pasa al siguiente sin repetir. MANUAL: el cliente o admin usa /elegir (ve candidatos y costos) y /ofertar/{tecnicoId}."],
+      ["negocio", "¿Cómo se implementa la ventana de 15 minutos?", "Al ofertar se guarda ofertaExpira = ahora + 15 min. OfertaScheduler (@Scheduled cada 30 s) busca las vencidas y llama a expirarOferta(id) en una transacción por solicitud: descarta al técnico, vuelve a PENDIENTE (usuario sistema) y, si es automática, reoferta. aceptar() también rechaza una oferta vencida."],
+      ["negocio", "¿Qué controla RN-5?", "Un técnico tiene como máximo 2 solicitudes en espera (OFERTADA, ASIGNADA o REPROGRAMADA) y 1 EN_CURSO. Se filtra en /elegir y en la oferta automática, se valida en /ofertar (422) y en aprobar-presupuesto."],
+      ["negocio", "¿Cómo se calcula el costo de la visita?", "Base = $5000 + km × $800 (distancia OSRM, o Haversine si falla). Recargo según estrategia: ESTANDAR 0%, PRIORIDAD +30% (urgente), FUERA_HORARIO +50% (fin de semana, feriado, antes de 8 o desde 18), COMBINADA +80%. Todo con BigDecimal."],
+      ["negocio", "¿Qué pasa al derivar una solicitud?", "EN_CURSO → DERIVADA → PENDIENTE en el mismo método: se descarta al técnico, se borran costo, diagnóstico y presupuesto (eran de él) y, si es automática, se oferta a otro."],
+      ["negocio", "¿Qué muestra el informe del administrador?", "GET /solicitudes/informe (solo ADMINISTRADOR): cantidades por estado, modo, prioridad y tipo; estrategias usadas; facturación de finalizadas; embudo de ofertas (enviadas, aceptadas, rechazadas, vencidas) y desempeño por técnico. Se calcula con consultas agregadas."],
+      ["datos", "¿Qué es el patrón Snapshot y dónde está?", "Copiar en la solicitud los datos del cliente (nombre, domicilio, coordenadas) y del técnico (nombre) al momento de crear/ofertar. Si el cliente se muda, la solicitud conserva el domicilio original (Postman: carpeta 03, Snapshot)."],
+      ["datos", "¿Por qué BigDecimal para la plata?", "double tiene errores de representación (0.1 + 0.2 ≠ 0.3). BigDecimal es exacto y con setScale(2, HALF_UP) se redondea a centavos. Lo pide el lineamiento §4."],
+      ["datos", "¿Por qué las relaciones son LAZY y qué es el problema N+1?", "LAZY carga la relación solo al usarla. N+1 es hacer 1 consulta para la lista y una más por cada elemento. Se evita con join fetch (certificaciones de técnicos) y default_batch_fetch_size (tipos de servicio)."],
+      ["datos", "¿Por qué una entidad intermedia en lugar de @ManyToMany?", "El lineamiento §4 lo recomienda cuando hay que manipular la relación. TecnicoCertificacion con @ManyToOne a cada lado y unique (tecnico_id, certificacion_id) coincide con el DER y se controla qué se guarda."],
+      ["datos", "¿Para qué sirve @Version?", "Bloqueo optimista: Hibernate agrega WHERE version = ? al UPDATE. Si otra operación cambió la fila, falla en vez de pisarla. Garantiza RN-4 ante aceptación y vencimiento simultáneos."],
+      ["resiliencia", "¿Qué hace el Circuit Breaker y cuándo se abre?", "Mira las últimas 10 llamadas (mínimo 5); si fallan el 50% o más se abre 20 s y falla al instante sin llamar. Después deja pasar 2 de prueba (medio abierto). Los errores de negocio (404, 422) no cuentan."],
+      ["resiliencia", "¿Qué pasa si ms-clientes está caído al crear una solicitud?", "Timeout de conexión → Retry (1 reintento) → fallback → ServicioNoDisponibleException → 503 con ProblemDetail. Como la transacción no termina, no se guarda nada (EN-09)."],
+      ["resiliencia", "¿Qué pasa si OSRM no responde?", "OsrmGeoService atrapa RestClientException y calcula con Haversine; la solicitud guarda fuenteDistancia = HAVERSINE. El negocio nunca se frena por la API externa (RN-8)."],
+      ["resiliencia", "¿Qué es el Correlation ID y cómo viaja?", "El número de ticket de un pedido. Lo genera el gateway si no viene, cada servicio lo guarda en el MDC (aparece como [cid:…] en cada log) y RestClient lo propaga en X-Correlation-ID. Todos los errores lo devuelven."],
+      ["docker", "¿Cómo se levanta todo?", "mvn clean package -DskipTests (genera los .jar) y docker compose up -d --build. Healthchecks + depends_on arrancan en orden: Keycloak → clientes y técnicos → solicitudes → gateway → frontend."],
+      ["docker", "¿Qué diferencia hay entre docker-compose.yml y el override?", "El override (desarrollo) se aplica solo con docker compose up y publica los puertos de los microservicios. En producción se usa --file docker-compose.yml: solo quedan publicados gateway, Keycloak y frontend."],
+      ["docker", "¿Por qué los servicios se llaman por nombre y no por localhost?", "Dentro de la red tpi-net, localhost es el propio contenedor. Docker resuelve ms-clientes a la IP de ese contenedor (lineamiento §10)."],
+      ["pruebas", "¿Cómo demuestran que el sistema funciona?", "Con la colección de Postman: carpetas 00 a 05 automáticas (74 peticiones, 153 verificaciones) y 06 con escenarios manuales. Se corre en Postman (Runner) o con Newman. Además Swagger y el frontend."],
+      ["pruebas", "¿Cómo prueban EN-07 sin esperar 15 minutos?", "OFERTA_VENTANA_MINUTOS=1 en el .env y docker compose up -d ms-solicitudes. Se crea y oferta, se espera ~90 s (ventana + pasada del scheduler) y se consulta: vuelve a PENDIENTE con nota del usuario sistema."],
+    ];
+
+    const clave = id => "defensa.repasada." + id;
+    const leer = k => { try { return localStorage.getItem(k); } catch { return null; } };
+    const guardar = (k, v) => { try { v === null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch { /* sin almacenamiento */ } };
+    const esc = t => String(t).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    const lista = document.getElementById("qa-list");
+    lista.innerHTML = PREGUNTAS.map(([cat, pregunta, respuesta], i) => {
+      const id = String(i + 1).padStart(2, "0");
+      const repasada = leer(clave(id)) === "1";
+      return `<div class="qa-item${repasada ? " reviewed" : ""}" data-id="${id}" data-cat="${cat}">
+        <div class="qa-header">
+          <div class="qa-title-wrap"><span class="qa-num">P${id}</span><span class="qa-question">${esc(pregunta)}</span></div>
+          <div class="qa-actions">
+            <span class="badge badge-primary">${esc(cat)}</span>
+            <button class="check-btn" type="button">${repasada ? "✔ Repasada" : "Marcar repasada"}</button>
+            <span class="qa-chevron">▼</span>
+          </div>
+        </div>
+        <div class="qa-body">${esc(respuesta)}</div>
+      </div>`;
+    }).join("");
+
+    function actualizarProgreso() {
+      const total = PREGUNTAS.length;
+      const hechas = lista.querySelectorAll(".qa-item.reviewed").length;
+      const pct = Math.round(hechas * 100 / total);
+      document.getElementById("progress-text").textContent = `${hechas} / ${total} (${pct}%)`;
+      document.getElementById("progress-fill").style.width = pct + "%";
+    }
+
+    lista.addEventListener("click", e => {
+      const item = e.target.closest(".qa-item");
+      if (!item) return;
+      if (e.target.closest(".check-btn")) {
+        const marcada = item.classList.toggle("reviewed");
+        e.target.closest(".check-btn").textContent = marcada ? "✔ Repasada" : "Marcar repasada";
+        guardar(clave(item.dataset.id), marcada ? "1" : null);
+        actualizarProgreso();
+        return;
+      }
+      if (e.target.closest(".qa-header")) item.classList.toggle("open");
+    });
+
+    document.getElementById("reset-progress-btn").addEventListener("click", () => {
+      lista.querySelectorAll(".qa-item").forEach(item => {
+        item.classList.remove("reviewed");
+        item.querySelector(".check-btn").textContent = "Marcar repasada";
+        guardar(clave(item.dataset.id), null);
+      });
+      actualizarProgreso();
+    });
+
+    // ---------------------------------------------------------------- filtro y búsqueda
+    let categoria = "todas";
+    function filtrar() {
+      const texto = document.getElementById("qa-search").value.trim().toLowerCase();
+      lista.querySelectorAll(".qa-item").forEach(item => {
+        const coincideCat = categoria === "todas" || item.dataset.cat === categoria;
+        const coincideTexto = !texto || item.textContent.toLowerCase().includes(texto);
+        item.style.display = coincideCat && coincideTexto ? "" : "none";
+      });
+    }
+    document.getElementById("qa-search").addEventListener("input", filtrar);
+    document.getElementById("qa-pills").addEventListener("click", e => {
+      const pill = e.target.closest(".pill-btn");
+      if (!pill) return;
+      document.querySelectorAll("#qa-pills .pill-btn").forEach(p => p.classList.toggle("active", p === pill));
+      categoria = pill.dataset.cat;
+      filtrar();
+    });
+
+    // ---------------------------------------------------------------- mostrar respuesta y copiar código
+    document.querySelectorAll("[data-reveal]").forEach(boton => boton.addEventListener("click", () => {
+      const caja = document.getElementById(boton.dataset.reveal);
+      const abierta = caja.classList.toggle("open");
+      boton.textContent = abierta ? "🙈 Ocultar respuesta" : "👁️ Ver respuesta";
+    }));
+    document.querySelectorAll(".copy-btn").forEach(boton => boton.addEventListener("click", async () => {
+      const codigo = boton.closest(".code-container").querySelector("pre").innerText;
+      try { await navigator.clipboard.writeText(codigo); boton.textContent = "¡Copiado!"; }
+      catch { boton.textContent = "Seleccioná y copiá"; }
+      setTimeout(() => { boton.textContent = "Copiar"; }, 1500);
+    }));
+
+    // ---------------------------------------------------------------- tema claro / oscuro
+    const raiz = document.documentElement;
+    const temaGuardado = leer("defensa.tema");
+    if (temaGuardado) raiz.dataset.theme = temaGuardado;
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+      const oscuroAhora = raiz.dataset.theme
+        ? raiz.dataset.theme === "dark"
+        : window.matchMedia("(prefers-color-scheme: dark)").matches;
+      raiz.dataset.theme = oscuroAhora ? "light" : "dark";
+      guardar("defensa.tema", raiz.dataset.theme);
+    });
+
+    // ---------------------------------------------------------------- menú: resaltar la sección visible
+    const enlaces = [...document.querySelectorAll(".nav-link")];
+    const observador = new IntersectionObserver(entradas => {
+      entradas.forEach(entrada => {
+        if (!entrada.isIntersecting) return;
+        enlaces.forEach(a => a.classList.toggle("active", a.getAttribute("href") === "#" + entrada.target.id));
+      });
+    }, { rootMargin: "-20% 0px -70% 0px" });
+    document.querySelectorAll("main .section").forEach(s => observador.observe(s));
+
+    actualizarProgreso();
+  </script>
+</body>
+</html>
